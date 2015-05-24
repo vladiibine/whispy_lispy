@@ -59,6 +59,7 @@ setup(
     ],
     install_requires=[
         # eg: 'aspectlib==1.1.1', 'six>=1.7',
+        'six'
     ],
     extras_require={
         # eg: 'rst': ['docutils>=0.11'],
@@ -68,4 +69,7 @@ setup(
             'whispy_lispy = whispy_lispy.__main__:main',
         ]
     },
+    tests_require=[
+        'pytest>2.7,<2.8'
+    ]
 )
