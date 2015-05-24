@@ -3,6 +3,8 @@ from __future__ import unicode_literals, print_function, absolute_import
 import unittest
 
 from whispy_lispy import lexer
+from whispy_lispy import syntax
+
 
 class LexerTestCase(unittest.TestCase):
     def test_lexer_parses_empty_text(self):
@@ -42,21 +44,20 @@ class LexerTestCase(unittest.TestCase):
         )
 
     def test_lexer_blows_up_on_single_opening_paren_outside_atom(self):
-        self.assertRaises(lexer.LispySyntaxError, lexer.get_tokens, '(')
+        self.assertRaises(syntax.LispySyntaxError, lexer.get_tokens, '(')
 
     def test_lexer_blows_up_on_extra_closing_paren_outside_atom(self):
-        self.assertRaises(lexer.LispySyntaxError, lexer.get_tokens, 'a (1) )')
+        self.assertRaises(syntax.LispySyntaxError, lexer.get_tokens, 'a (1) )')
 
     def test_lexer_blows_up_on_mismatched_parens(self):
-        self.assertRaises(lexer.LispySyntaxError, lexer.get_tokens, '(a ( b ) (')  # noqa
+        self.assertRaises(syntax.LispySyntaxError, lexer.get_tokens, '(a ( b ) (')  # noqa
 
     def test_lexer_blows_up_when_closing_parens_in_the_beginning(self):
-        self.assertRaises(lexer.LispySyntaxError, lexer.get_tokens, ') a (b c)')  # noqa
+        self.assertRaises(syntax.LispySyntaxError, lexer.get_tokens, ') a (b c)')  # noqa
 
     def test_lexer_blows_up_on_deeply_nested_non_matching_parentheses(self):
         self.assertRaises(
-            lexer.LispySyntaxError, lexer.get_tokens,
-            '(a b (c (d ))))('
+            syntax.LispySyntaxError, lexer.get_tokens, '(a b (c (d ))))('
         )
 
     def test_lexer_matches_quote(self):

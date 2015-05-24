@@ -3,12 +3,13 @@
 Will accept a tree of allowed symbols, and construct an abstract syntax tree
 """
 from __future__ import unicode_literals
+from whispy_lispy import syntax
 
 DEFINITION = 'def'
 QUOTE = "'"
 EVAL = "eval"
 
-class Assignment(object):
+class Assign(object):
     def __init__(self, symbol, value):
         self.symbol = symbol
         self.value = value
@@ -16,7 +17,7 @@ class Assignment(object):
     def __eq__(self, other):
         if other is None:
             return False
-        if not isinstance(other, Assignment):
+        if not isinstance(other, Assign):
             return False
         return self.symbol == other.symbol and self.value == other.value
 
@@ -43,6 +44,7 @@ class Assignment(object):
 
     def __repr__(self):
         return 'Assignment {} := {}'.format(self.symbol, self.value)
+
 
 class Quote(object):
     def __init__(self, value):
@@ -86,7 +88,11 @@ class Eval(object):
         if not isinstance(tree, list):
             return
 
-        quotation = get_ast([tree[1:]])[0]
+        try:
+            quotation = get_ast([tree[1:]])[0]
+        except IndexError:
+            return
+
         if not isinstance(quotation, Quote):
             return
         if tree[0] == EVAL:
@@ -107,7 +113,38 @@ class Eval(object):
         return "Eval {}".format(self.quotation)
 
 
+class Apply(object):
+    def __init__(self, func, *args):
+        self.func = func
+        self.args = args
 
+    @staticmethod
+    def matches(tree):
+        if not tree:
+            return
+        if not isinstance(tree, list):
+            return
+
+        # TODO - find nicer say to check for symbols that aren't values
+        # By this i mean that the lexer must RETURN symbols and not strings
+        if isinstance(tree[0], syntax.Symbol):
+            return tree
+
+    @classmethod
+    def from_match(cls, match):
+        head, tail = match[0], match[1:]
+        return cls(head, *tail)
+
+    def __eq__(self, other):
+        if other is None:
+            return
+        if not isinstance(other, Apply):
+            return
+        return self.func == other.func and self.args == other.args
+
+    def __repr__(self):
+        return 'Apply {} {}'.format(
+            self.func, self.args if self.args is not None else '')
 
 def get_ast(tree):
     """
@@ -121,7 +158,7 @@ def get_ast(tree):
         return ast
 
     for elem in tree:
-        for operation in (Assignment, Quote, Eval):
+        for operation in (Assign, Quote, Eval, Apply):
             match = operation.matches(elem)
             if match:
                 ast.append(operation.from_match(match))

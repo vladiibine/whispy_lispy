@@ -10,7 +10,7 @@ class ParserTests(unittest.TestCase):
     def test_parser_parses_assignment(self):
         self.assertEqual(
             parser.get_ast([['def', 'x', 1]]),
-            [parser.Assignment('x', 1)]
+            [parser.Assign('x', 1)]
         )
 
     def test_parser_parses_quotation(self):
@@ -21,6 +21,6 @@ class ParserTests(unittest.TestCase):
             parser.get_ast([['eval', "'", ['a', 'b']]]),
             [parser.Eval(parser.Quote(['a', 'b']))])
 
-    # def test_parse_implicit_apply(self):
-    #     self.assertEqual(parser.get_ast([['asdf', 3, 4]], parser.Eval()))
-    #     pass
+    def test_parse_implicit_apply(self):
+        self.assertEqual(
+            parser.get_ast([['asdf', 3, 4]]), [parser.Apply('asdf', 3, 4)])

@@ -1,13 +1,13 @@
 # -*- coding utf-8 -*-
 from __future__ import unicode_literals, absolute_import, print_function
-import six
 import re
+import six
+
+from whispy_lispy.syntax import LispySyntaxError
 
 if six.PY2:
     str = unicode
 
-class LispySyntaxError(Exception):
-    pass
 
 def get_atoms(text):
     """Return the "atom" as a possibly nested list
