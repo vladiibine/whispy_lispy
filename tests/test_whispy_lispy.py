@@ -18,20 +18,22 @@ class LexerTestCase(unittest.TestCase):
         self.assertEqual(lexer.get_tokens('as_df'), ['as_df'])
 
     def test_lexer_parses_all_known_symbol_types(self):
-        self.assertEqual(
-            lexer.get_tokens('dada 3.4 44 rere 6'),
-            ['dada', 3.4, 44, 'rere', 6])
+        self.assertEqual(lexer.get_tokens('d 3.4 44 r 6'), ['d', 3.4, 44, 'r', 6])  # noqa
 
     def test_lexer_parses_simple_atom(self):
-        self.assertEqual(lexer.get_tokens('(asdf 3)'), [['asdf', 3]])
+        self.assertEqual(lexer.get_tokens('(a 3)'), [['a', 3]])
 
     def test_lexer_omits_newline(self):
-        self.assertEqual(lexer.get_tokens('asdf\nzxcv'), ['asdf', 'zxcv'])
+        self.assertEqual(lexer.get_tokens('a\nz'), ['a', 'z'])
+
+    def test_lexer_parses_symbol_then_atom(self):
+        self.assertEqual(lexer.get_tokens('a (1 d)'), ['a', [1, 'd']])
+
+    def test_lexer_parses_atom_then_symbol(self):
+        self.assertEqual(lexer.get_tokens('(a 1) 3'), [['a', 1], 3])
 
     def test_lexer_parses_multiple_non_nested_atoms(self):
-        self.assertEqual(
-            lexer.get_tokens('(asdf 3) (zxcv 4)'),
-            [['asdf', 3], ['zxcv', 4]])
+        self.assertEqual(lexer.get_tokens('(a 3) (z 4)'), [['a', 3], ['z', 4]])
 
     def test_lexer_parses_multiple_nested_atoms(self):
         self.assertEqual(
