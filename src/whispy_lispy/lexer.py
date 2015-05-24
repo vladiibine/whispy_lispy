@@ -6,6 +6,9 @@ import re
 if six.PY2:
     str = unicode
 
+class LispySyntaxError(Exception):
+    pass
+
 def get_atoms(text):
     """Return the "atom" as a possibly nested list
 
@@ -34,10 +37,20 @@ def get_atoms(text):
                         atoms.append(new_tokens)
                     remaining_text = remaining_text[idx + 1:].lstrip()
                     break
+                elif open_count < 0:
+                    raise LispySyntaxError(
+                        'Atom contains too many closing parentheses: "{}"'
+                        .format(text)
+                    )
             elif open_count == 0:
-                new_tokens = get_tokens(remaining_text)
-                atoms.extend(new_tokens)
+                atoms.extend(get_tokens(remaining_text))
                 remaining_text = ''
+                break
+            if len(text) == idx + 1:
+                raise LispySyntaxError(
+                    'Atom contains too many opening parentheses "{}"'
+                    .format(text)
+                )
 
     return atoms
 
@@ -68,5 +81,12 @@ def get_tokens(text):
                     new_tokens = [new_tokens]
                 tokens.extend(new_tokens)
                 remaining_text = remaining_text[end:].lstrip()
+                break
+        else:
+            raise LispySyntaxError(
+                "The following structure can't be parsed: \"{}\"".format(
+                    remaining_text
+                )
+            )
 
     return tokens

@@ -40,3 +40,21 @@ class LexerTestCase(unittest.TestCase):
             lexer.get_tokens('(a 1 (2 3 (4 b)) c (2 2 (1 a))) (a 2)'),
             [['a', 1, [2, 3, [4, 'b']], 'c', [2, 2, [1, 'a']]], ['a', 2]]
         )
+
+    def test_lexer_blows_up_on_single_opening_paren_outside_atom(self):
+        self.assertRaises(lexer.LispySyntaxError, lexer.get_tokens, '(')
+
+    def test_lexer_blows_up_on_extra_closing_paren_outside_atom(self):
+        self.assertRaises(lexer.LispySyntaxError, lexer.get_tokens, 'a (1) )')
+
+    def test_lexer_blows_up_on_mismatched_parens(self):
+        self.assertRaises(lexer.LispySyntaxError, lexer.get_tokens, '(a ( b ) (')  # noqa
+
+    def test_lexer_blows_up_when_closing_parens_in_the_beginning(self):
+        self.assertRaises(lexer.LispySyntaxError, lexer.get_tokens, ') a (b c)')  # noqa
+
+    def test_lexer_blows_up_on_deeply_nested_non_matching_parentheses(self):
+        self.assertRaises(
+            lexer.LispySyntaxError, lexer.get_tokens,
+            '(a b (c (d ))))('
+        )
