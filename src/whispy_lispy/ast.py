@@ -238,7 +238,7 @@ class Apply(object):
 
     def eval(self, scope):
         try:
-            func = scope[self.symbol]
+            func = scope[self.symbol.eval(scope)]
         except KeyError:
             raise exceptions.LispyUnboundSymbolError(
                 'Missing symbol name: "{}"'.format(self.symbol))
