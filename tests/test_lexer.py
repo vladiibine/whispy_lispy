@@ -62,6 +62,11 @@ class LexerTestCase(unittest.TestCase):
     def test_lexer_matches_quote(self):
         self.assertTrue(lexer.get_tokens("'''a b"), ["'", "'", "'", "a", "b"])
 
-    # This test is just to see the basic structure of the syntax tree
+    # These next tests are just to see the basic structure of the syntax tree
+
     def test_lexer_packs_assignment(self):
         self.assertEqual(lexer.get_tokens('(def x 1)'), [['def', 'x', 1]])
+
+    def test_parses_eval_quote(self):
+        self.assertEqual(
+            lexer.get_tokens("(eval '(a b))"), [['eval', "'", ['a', 'b']]])
