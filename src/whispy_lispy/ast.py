@@ -1,7 +1,12 @@
 # -*- coding utf-8 -*-
 from __future__ import unicode_literals
 
-from whispy_lispy import syntax
+from whispy_lispy import syntax, exceptions
+
+
+DEFINITION = 'def'
+QUOTE = "'"
+EVAL = "eval"
 
 
 class Assign(object):
@@ -41,7 +46,16 @@ class Assign(object):
         return 'Assignment {} := {}'.format(self.symbol, self.value)
 
     def eval(self, scope):
-        scope[self.symbol] = self.value
+        if hasattr(self.value, 'eval'):
+            scope[self.symbol] = self.value.eval(scope)
+        elif isinstance(self.value, syntax.Symbol):
+            try:
+                scope[self.symbol] = scope[self.value]
+            except KeyError:
+                raise exceptions.LispyUnboundSymbolError
+        else:
+            # TODO - drop this when the parser will only return AST classes
+            scope[self.symbol] = self.value
 
 
 class Quote(object):
@@ -151,7 +165,5 @@ class Apply(object):
         return 'Apply {} {}'.format(
             self.func, self.args if self.args is not None else '')
 
-
-DEFINITION = 'def'
-QUOTE = "'"
-EVAL = "eval"
+    def eval(self, scope):
+        pass

@@ -3,8 +3,7 @@ from __future__ import unicode_literals, absolute_import
 
 import unittest
 
-from whispy_lispy import interpreter, parser, ast
-
+from whispy_lispy import interpreter, ast, exceptions
 
 
 class InterpreterTest(unittest.TestCase):
@@ -22,8 +21,26 @@ class InterpreterTest(unittest.TestCase):
         interpreter.interpret([ast.Assign('x', 3)], scope)
         self.assertEqual(scope['x'], 3)
 
+    def test_assignment_returns_nothing(self):
+        scope = {}
+        result = interpreter.interpret([ast.Assign('x', 3)], scope)
+        self.assertIsNone(result)
+
     def test_assignments_change_scope_and_interpreter_returns_value(self):
         scope = {}
-        result = interpreter.interpret([ast.Assign('x', 6), 4], scope)  # noqa
+        result = interpreter.interpret([ast.Assign('x', 6), 4], scope)
         self.assertEqual(scope['x'], 6)
         self.assertEqual(result, 4)
+
+    def test_assignment_from_another_assigned_symbol(self):
+        scope = {}
+        interpreter.interpret([ast.Assign('x', 6), ast.Assign('y', 'x')], scope)  # noqa
+        self.assertEqual(scope['y'], 6)
+
+    def test_assignment_from_missing_symbol(self):
+        scope = {}
+        self.assertRaises(
+            exceptions.LispyUnboundSymbolError,
+            interpreter.interpret,
+            [ast.Assign('x', 'y')], scope
+        )

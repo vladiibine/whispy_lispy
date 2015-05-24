@@ -71,3 +71,9 @@ class LexerTestCase(unittest.TestCase):
     def test_parses_eval_quote(self):
         self.assertEqual(
             lexer.get_tokens("(eval '(a b))"), [['eval', "'", ['a', 'b']]])
+
+    def test_parse_assignment_from_assigned_value(self):
+        self.assertEqual(
+            lexer.get_tokens("(def x 9) (def y x)"),
+            [['def', 'x', 9], ['def', 'y', 'x']]
+        )

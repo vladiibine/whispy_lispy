@@ -25,3 +25,10 @@ class ParserTests(unittest.TestCase):
     def test_parse_implicit_apply(self):
         self.assertEqual(
             parser.get_ast([['asdf', 3, 4]]), [ast.Apply('asdf', 3, 4)])
+
+    def test_parse_assigning_from_assigned_value(self):
+        self.assertEqual(
+            parser.get_ast([['def', 'x', 9], ['def', 'y', 'x']]),
+            [ast.Assign('x', 9), ast.Assign('y', 'x')]
+        )
+
