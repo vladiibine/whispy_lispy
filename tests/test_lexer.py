@@ -58,3 +58,10 @@ class LexerTestCase(unittest.TestCase):
             lexer.LispySyntaxError, lexer.get_tokens,
             '(a b (c (d ))))('
         )
+
+    def test_lexer_matches_quote(self):
+        self.assertTrue(lexer.get_tokens("'''a b"), ["'", "'", "'", "a", "b"])
+
+    # This test is just to see the basic structure of the syntax tree
+    def test_lexer_packs_assignment(self):
+        self.assertEqual(lexer.get_tokens('(def x 1)'), [['def', 'x', 1]])

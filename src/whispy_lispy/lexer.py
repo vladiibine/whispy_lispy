@@ -58,12 +58,15 @@ def get_atoms(text):
 TOKEN_TYPES = (
     (float, re.compile('[0-9]+\.[0-9]+')),
     (int, re.compile('[0-9]+')),
-    (str, re.compile('[a-zA-Z_]+')),
+    # Mathc symbols and quotes
+    (str, re.compile('[a-zA-Z_]+|\'')),
     (get_atoms, re.compile('\(.*\)'))
 )
 
 def get_tokens(text):
-    """Return nested list, representing the atoms in the given text
+    """Return nested list, representing the atoms in the given text.
+
+    I think this is a "syntax tree"...?
 
     :param text: a block of text (can contain newlines and everything)
     :rtype: list[str]
