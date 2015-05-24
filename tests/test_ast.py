@@ -10,3 +10,10 @@ class QuoteTestCase(unittest.TestCase):
             ast.Quote.matches(["'", 'a']),
             [ast.Symbol('a')]
         )
+
+class ApplyTestCase(unittest.TestCase):
+    def test_simple_apply(self):
+        self.assertEqual(
+            ast.Apply.matches(['su', 1, 2]),
+            [ast.Symbol('su'), ast.Literal(1), ast.Literal(2)]
+        )

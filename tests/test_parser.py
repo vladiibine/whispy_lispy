@@ -35,14 +35,23 @@ class ParserTests(unittest.TestCase):
         )
 
     def test_quote_sum(self):
+        result = parser.get_ast([["'", ['sum', 1, 2]]])
         self.assertEqual(
-            parser.get_ast([["'", ['sum', 1, 2]]]),
-            [ast.Quote([ast.Apply(ast.Symbol('sum'), 1, 2)])]
+            result,
+            [ast.Quote(
+                [ast.Apply(ast.Symbol('sum'),
+                           ast.Literal(1),
+                           ast.Literal(2))])
+             ]
         )
 
     def test_parse_eval_quote_sum(self):
         self.assertEqual(
             parser.get_ast([['eval', "'", ['sum', 1, 2]]]),
-            [ast.Eval(ast.Quote([ast.Apply(ast.Symbol('sum'), 1, 2)]))]
+            [ast.Eval(
+                ast.Quote(
+                    [ast.Apply(
+                        ast.Symbol('sum'),
+                        ast.Literal(1),
+                        ast.Literal(2))]))]
         )
-

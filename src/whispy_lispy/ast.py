@@ -31,7 +31,7 @@ class Symbol(object):
         return cls(match)
 
     def __repr__(self):
-        return 'Symbol {}'.format(self.value)
+        return 'Sym. {}'.format(self.value)
 
     def __eq__(self, other):
         if other is None:
@@ -41,7 +41,37 @@ class Symbol(object):
         return self.value == other.value
 
     def eval(self, scope):
-        return self
+        return self.value
+
+
+class Literal(object):
+    def __init__(self, value):
+        self.value = value
+
+    @staticmethod
+    def matches(tree):
+        if tree is None:
+            return
+        if isinstance(tree, list):
+            return
+        return tree
+
+    @classmethod
+    def from_match(cls, match):
+        return cls(match)
+
+    def __eq__(self, other):
+        if other is None:
+            return False
+        if not isinstance(other, self.__class__):
+            return False
+        return self.value == other.value
+
+    def __repr__(self):
+        return 'Lit. {}'.format(self.value)
+
+    def eval(self, scope):
+        return self.value
 
 
 class Assign(object):
@@ -81,16 +111,16 @@ class Assign(object):
         return 'Assignment {} := {}'.format(self.symbol, self.value)
 
     def eval(self, scope):
-        if hasattr(self.value, 'eval'):
-            scope[self.symbol] = self.value.eval(scope)
-        elif isinstance(self.value, Symbol):
+        if isinstance(self.value, Symbol):
+            value_eval = self.value.eval(scope)
             try:
-                scope[self.symbol] = scope[self.value]
+                scope[self.symbol.eval(scope)] = scope[value_eval]
             except KeyError:
-                raise exceptions.LispyUnboundSymbolError
-        else:
-            # TODO - drop this when the parser will only return AST classes
-            scope[self.symbol] = self.value
+                raise exceptions.LispyUnboundSymbolError(
+                    "No such symbol in scope: {}".format(value_eval)
+                )
+        elif isinstance(self.value, Literal):
+            scope[self.symbol.eval(scope)] = self.value.eval(scope)
 
 
 class Quote(object):
@@ -171,10 +201,10 @@ class Eval(object):
 
 
 class Apply(object):
-    def __init__(self, func, *args):
-        if isinstance(func, six.string_types):
+    def __init__(self, symbol, *args):
+        if isinstance(symbol, six.string_types):
             pass
-        self.func = func
+        self.symbol = symbol
         self.args = args
 
     @staticmethod
@@ -187,7 +217,8 @@ class Apply(object):
         # TODO - find nicer say to check for symbols that aren't values
         # By this i mean that the lexer must RETURN symbols and not strings
         if isinstance(tree[0], Symbol):
-            return tree
+            from whispy_lispy import parser
+            return parser.get_ast(tree)
 
     @classmethod
     def from_match(cls, match):
@@ -199,16 +230,16 @@ class Apply(object):
             return
         if not isinstance(other, Apply):
             return
-        return self.func == other.func and self.args == other.args
+        return self.symbol == other.symbol and self.args == other.args
 
     def __repr__(self):
         return 'Apply {} {}'.format(
-            self.func, self.args if self.args is not None else '')
+            self.symbol, self.args if self.args is not None else '')
 
     def eval(self, scope):
         try:
-            func = scope[self.func]
+            func = scope[self.symbol]
         except KeyError:
             raise exceptions.LispyUnboundSymbolError(
-                'Missing function name: "{}"'.format(self.func))
+                'Missing symbol name: "{}"'.format(self.symbol))
         return func(scope, self.args)

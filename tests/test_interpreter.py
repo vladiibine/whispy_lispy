@@ -11,16 +11,19 @@ class ReturnValueTestCase(unittest.TestCase):
         self.assertEqual(interpreter.interpret([]), None)
 
     def test_interpret_int(self):
-        self.assertEqual(interpreter.interpret([3]), 3)
+        self.assertEqual(interpreter.interpret([ast.Literal(3)]), 3)
 
     def test_interpret_return_last_value(self):
-        self.assertEqual(interpreter.interpret([3, 4, 5]), 5)
+        self.assertEqual(interpreter.interpret([ast.Literal(3),
+                                                ast.Literal(4),
+                                                ast.Literal(5)]),
+                         5)
 
 
 class AssignTestCase(unittest.TestCase):
     def test_assignment_changes_global_scope(self):
         scope = {}
-        interpreter.interpret([ast.Assign('x', 3)], scope)
+        interpreter.interpret([ast.Assign(ast.Symbol('x'), ast.Literal(3))], scope)  # noqa
         self.assertEqual(scope['x'], 3)
 
     def test_assignment_returns_nothing(self):
@@ -30,13 +33,21 @@ class AssignTestCase(unittest.TestCase):
 
     def test_assignments_change_scope_and_interpreter_returns_value(self):
         scope = {}
-        result = interpreter.interpret([ast.Assign('x', 6), 4], scope)
+        result = interpreter.interpret(
+            [
+                ast.Assign(
+                    ast.Symbol('x'),
+                    ast.Literal(6)),
+                ast.Literal(4)
+            ], scope)
         self.assertEqual(scope['x'], 6)
         self.assertEqual(result, 4)
 
     def test_assignment_from_another_assigned_symbol(self):
         scope = {}
-        interpreter.interpret([ast.Assign('x', 6), ast.Assign('y', 'x')], scope)  # noqa
+        interpreter.interpret(
+            [ast.Assign(ast.Symbol('x'), ast.Literal(6)),
+             ast.Assign(ast.Symbol('y'), ast.Symbol('x'))], scope)
         self.assertEqual(scope['y'], 6)
 
     def test_assignment_from_missing_symbol(self):
@@ -44,7 +55,7 @@ class AssignTestCase(unittest.TestCase):
         self.assertRaises(
             exceptions.LispyUnboundSymbolError,
             interpreter.interpret,
-            [ast.Assign('x', 'y')], scope
+            [ast.Assign(ast.Symbol('x'), ast.Symbol('y'))], scope
         )
 
 class ApplyTestCase(unittest.TestCase):
@@ -53,7 +64,8 @@ class ApplyTestCase(unittest.TestCase):
             return sum(args)
 
         scope = {'sum': native_sum_mock}
-        result = interpreter.interpret([ast.Apply(ast.Symbol('sum'), 9, 8)], scope)  # noqa
+        result = interpreter.interpret(
+            [ast.Apply(ast.Symbol('sum'), ast.Literal(9), ast.Literal(8))], scope)  # noqa
 
         self.assertEqual(result, 17)
 
@@ -61,7 +73,7 @@ class ApplyTestCase(unittest.TestCase):
         self.assertRaises(
             exceptions.LispyUnboundSymbolError,
             interpreter.interpret,
-            [ast.Apply(ast.Symbol('sum'), 9, 8)]
+            [ast.Apply(ast.Symbol('sum'), ast.Literal(9), ast.Literal(8))]
         )
 
 class EvalQuoteTestCase(unittest.TestCase):
@@ -70,6 +82,6 @@ class EvalQuoteTestCase(unittest.TestCase):
             return sum(args)
         scope = {'sum': native_sum_mock}
         self.assertEqual(
-            interpreter.interpret([ast.Eval(ast.Quote(['sum', 1, 2]))], scope),
+            interpreter.interpret([ast.Eval(ast.Quote([ast.Symbol('sum'), ast.Literal(1), ast.Literal(2)]))], scope),  # noqa
             1
         )
