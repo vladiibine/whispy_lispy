@@ -196,7 +196,11 @@ class Eval(object):
         return "Eval {}".format(self.quotation)
 
     def eval(self, scope):
-        pass
+        result = None
+        for apply_candidate in self.quotation.value:
+            result = apply_candidate.eval(scope)
+
+        return result
 
 
 

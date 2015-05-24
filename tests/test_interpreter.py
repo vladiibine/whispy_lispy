@@ -79,14 +79,16 @@ class ApplyTestCase(unittest.TestCase):
 class EvalQuoteTestCase(unittest.TestCase):
     def test_quote_sum(self):
         def native_sum_mock(scope, args):
-            return sum(args)
+            return sum(arg.eval(scope) for arg in args)
+        
         scope = {'sum': native_sum_mock}
+
         self.assertEqual(
             interpreter.interpret(
-                [ast.Eval(ast.Quote([ast.Apply([
+                [ast.Eval(ast.Quote([ast.Apply(
                     ast.Symbol('sum'),
                     ast.Literal(1),
-                    ast.Literal(2)])]))],
-                scope),  # noqa
-            1
+                    ast.Literal(2))]))],
+                scope),
+            3
         )
