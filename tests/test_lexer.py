@@ -77,3 +77,9 @@ class LexerTestCase(unittest.TestCase):
             lexer.get_tokens("(def x 9) (def y x)"),
             [['def', 'x', 9], ['def', 'y', 'x']]
         )
+
+    def test_parse_eval_quote(self):
+        self.assertEqual(
+            lexer.get_tokens("(eval '(sum 1 2))"),
+            [[u'eval', u"'", [u'sum', 1, 2]]]
+        )

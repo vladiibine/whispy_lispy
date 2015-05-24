@@ -15,12 +15,14 @@ class ParserTests(unittest.TestCase):
         )
 
     def test_parser_parses_quotation(self):
-        self.assertEqual(parser.get_ast([["'", 'a']]), [ast.Quote('a')])
+        self.assertEqual(
+            parser.get_ast([["'", 'a']]),
+            [ast.Quote([ast.Symbol('a')])])
 
     def test_parses_explicit_evaluation(self):
         self.assertEqual(
             parser.get_ast([['eval', "'", ['a', 'b']]]),
-            [ast.Eval(ast.Quote(['a', 'b']))])
+            [ast.Eval(ast.Quote([ast.Apply('a', 'b')]))])
 
     def test_parse_implicit_apply(self):
         self.assertEqual(
@@ -30,5 +32,17 @@ class ParserTests(unittest.TestCase):
         self.assertEqual(
             parser.get_ast([['def', 'x', 9], ['def', 'y', 'x']]),
             [ast.Assign('x', 9), ast.Assign('y', 'x')]
+        )
+
+    def test_quote_sum(self):
+        self.assertEqual(
+            parser.get_ast([["'", ['sum', 1, 2]]]),
+            [ast.Quote([ast.Apply(ast.Symbol('sum'), 1, 2)])]
+        )
+
+    def test_parse_eval_quote_sum(self):
+        self.assertEqual(
+            parser.get_ast([['eval', "'", ['sum', 1, 2]]]),
+            [ast.Eval(ast.Quote([ast.Apply(ast.Symbol('sum'), 1, 2)]))]
         )
 

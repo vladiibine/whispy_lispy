@@ -18,7 +18,7 @@ def get_ast(tree):
         return abstract_syntax_tree
 
     for elem in tree:
-        for operation in (ast.Assign, ast.Quote, ast.Eval, ast.Apply):
+        for operation in (ast.Assign, ast.Quote, ast.Eval, ast.Symbol,ast.Apply):
             match = operation.matches(elem)
             if match:
                 abstract_syntax_tree.append(operation.from_match(match))

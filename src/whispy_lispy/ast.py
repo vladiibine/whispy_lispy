@@ -1,12 +1,47 @@
 # -*- coding utf-8 -*-
 from __future__ import unicode_literals
+import six
 
-from whispy_lispy import syntax, exceptions
+from whispy_lispy import exceptions
+
 
 
 DEFINITION = 'def'
 QUOTE = "'"
 EVAL = "eval"
+
+class SymbolMeta(type):
+    def __instancecheck__(self, instance):
+        if isinstance(instance, six.string_types):
+            return True
+
+class Symbol(object):
+    __metaclass__ = SymbolMeta
+
+    def __init__(self, value):
+        self.value = value
+
+    @staticmethod
+    def matches(tree):
+        if isinstance(tree, six.string_types):
+            return tree
+
+    @classmethod
+    def from_match(cls, match):
+        return cls(match)
+
+    def __repr__(self):
+        return 'Symbol {}'.format(self.value)
+
+    def __eq__(self, other):
+        if other is None:
+            return False
+        if not isinstance(other, Symbol):
+            return False
+        return self.value == other.value
+
+    def eval(self, scope):
+        return self
 
 
 class Assign(object):
@@ -48,7 +83,7 @@ class Assign(object):
     def eval(self, scope):
         if hasattr(self.value, 'eval'):
             scope[self.symbol] = self.value.eval(scope)
-        elif isinstance(self.value, syntax.Symbol):
+        elif isinstance(self.value, Symbol):
             try:
                 scope[self.symbol] = scope[self.value]
             except KeyError:
@@ -68,13 +103,14 @@ class Quote(object):
     @staticmethod
     def matches(tree):
         if not tree:
-            return False
+            return
 
         if not isinstance(tree, list):
-            return False
+            return
 
         if tree[0] == QUOTE:
-            return tree[1]
+            from whispy_lispy import parser
+            return parser.get_ast(tree[1:])
 
     def __eq__(self, other):
         if other is None:
@@ -110,6 +146,7 @@ class Eval(object):
             return
 
         if not isinstance(quotation, Quote):
+            # TODO - i wonder if this were a nice place to throw an error
             return
         if tree[0] == EVAL:
             return quotation
@@ -132,8 +169,11 @@ class Eval(object):
         pass
 
 
+
 class Apply(object):
     def __init__(self, func, *args):
+        if isinstance(func, six.string_types):
+            pass
         self.func = func
         self.args = args
 
@@ -146,7 +186,7 @@ class Apply(object):
 
         # TODO - find nicer say to check for symbols that aren't values
         # By this i mean that the lexer must RETURN symbols and not strings
-        if isinstance(tree[0], syntax.Symbol):
+        if isinstance(tree[0], Symbol):
             return tree
 
     @classmethod
@@ -166,4 +206,9 @@ class Apply(object):
             self.func, self.args if self.args is not None else '')
 
     def eval(self, scope):
-        pass
+        try:
+            func = scope[self.func]
+        except KeyError:
+            raise exceptions.LispyUnboundSymbolError(
+                'Missing function name: "{}"'.format(self.func))
+        return func(scope, self.args)
