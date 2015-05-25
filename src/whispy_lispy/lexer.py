@@ -4,6 +4,7 @@ import re
 import six
 
 from whispy_lispy.syntax import LispySyntaxError
+from whispy_lispy import cst
 
 if six.PY2:
     str = unicode
@@ -54,13 +55,18 @@ def get_atoms(text):
 
     return atoms
 
+def make_token(func):
+    def wrapper(value):
+        return cst.Token([func(value)])
+    return wrapper
+
 
 TOKEN_TYPES = (
-    (float, re.compile('[0-9]+\.[0-9]+')),
-    (int, re.compile('[0-9]+')),
+    (make_token(float), re.compile('[0-9]+\.[0-9]+')),
+    (make_token(int), re.compile('[0-9]+')),
     # Mathc symbols and quotes
-    (str, re.compile('[a-zA-Z_]+|\'')),
-    (get_atoms, re.compile('\(.*\)'))
+    (make_token(str), re.compile('[a-zA-Z_]+|\'')),
+    (make_token(get_atoms), re.compile('\(.*\)'))
 )
 
 def get_tokens(text):
@@ -93,3 +99,34 @@ def get_tokens(text):
             )
 
     return tokens
+
+SOURCE_PATTERNS = (
+    (make_token(lambda x: True if x == '#t' else False), re.compile('#[ft]')),
+    (make_token(float), re.compile('[0-9]+\.[0-9]+')),
+    (make_token(int), re.compile('[0-9]+')),
+    # Match symbols and quotes
+    (make_token(str), re.compile('[a-zA-Z_]+|\'')),
+    (lambda _: cst.IncrementNesting, re.compile('\(')),
+    (lambda _: cst.DecrementNesting, re.compile('\)')),
+)
+
+def get_flat_token_list(text):
+    """From the source file, create a flat list of tokens
+    """
+    tokens = []
+    remaining_text = text.lstrip()
+
+    while remaining_text:
+        for converter, pattern in SOURCE_PATTERNS:
+            result = pattern.match(remaining_text)
+            if result:
+                start, end = result.span()
+                tokens.append(converter(remaining_text[start:end]))
+                remaining_text = remaining_text[end:].lstrip()
+
+    return tokens
+
+def get_concrete_syntax_tree(token_list):
+    """Return a "concrete" syntax tree from the flat token list
+    """
+    pass

@@ -1,4 +1,6 @@
 # -*- coding utf-8 -*-
+"""Abstract syntax tree stuff
+"""
 from __future__ import unicode_literals
 import six
 
@@ -74,6 +76,10 @@ class Literal(object):
 
 
 class Assign(object):
+    """Represents the basic assignment.
+
+    Right now only binds vars to the scope
+    """
     def __init__(self, symbol, value):
         self.symbol = symbol
         self.value = value
@@ -123,11 +129,13 @@ class Assign(object):
 
 
 class Quote(object):
-    def __init__(self, value):
-        self.value = value
+    """Stops the next expression from being evaluated
+    """
+    def __init__(self, expression):
+        self.expression = expression
 
     def __repr__(self):
-        return 'Quote {}'.format(self.value)
+        return 'Quote {}'.format(self.expression)
 
     @staticmethod
     def matches(tree):
@@ -146,7 +154,7 @@ class Quote(object):
             return False
         if not isinstance(other, Quote):
             return False
-        return self.value == other.value
+        return self.expression == other.expression
 
     @classmethod
     def from_match(cls, elem):
@@ -157,7 +165,13 @@ class Quote(object):
 
 
 class Eval(object):
+    """Evaluates the next expression
+    """
     def __init__(self, quotation):
+        """
+        :type quotation: Quote
+        """
+
         self.quotation = quotation
 
     @staticmethod
@@ -196,7 +210,7 @@ class Eval(object):
 
     def eval(self, scope):
         result = None
-        for apply_candidate in self.quotation.value:
+        for apply_candidate in self.quotation.expression:
             result = apply_candidate.eval(scope)
 
         return result
