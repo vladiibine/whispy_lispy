@@ -2,6 +2,7 @@
 from __future__ import unicode_literals, absolute_import, print_function
 import re
 import six
+from collections import deque
 
 from whispy_lispy.syntax import LispySyntaxError
 from whispy_lispy import cst
@@ -57,14 +58,14 @@ def get_atoms(text):
 
 def make_token(func):
     def wrapper(value):
-        return cst.Token([func(value)])
+        return cst.Token(func(value))
     return wrapper
 
 
 TOKEN_TYPES = (
     (make_token(float), re.compile('[0-9]+\.[0-9]+')),
     (make_token(int), re.compile('[0-9]+')),
-    # Mathc symbols and quotes
+    # Match symbols and quotes
     (make_token(str), re.compile('[a-zA-Z_]+|\'')),
     (make_token(get_atoms), re.compile('\(.*\)'))
 )
@@ -128,5 +129,26 @@ def get_flat_token_list(text):
 
 def get_concrete_syntax_tree(token_list):
     """Return a "concrete" syntax tree from the flat token list
+
+    Raises syntax error if braces are mismatched
+    Collapses all the inc/dec tokens
     """
-    pass
+    q = deque([[]])
+
+    for token in token_list:
+        if token is cst.IncrementNesting:
+            q.append([])
+            continue
+        if token is cst.DecrementNesting:
+            wrap_up = q.pop()
+            try:
+                q[-1].append(cst.Node(tuple(wrap_up)))
+            except IndexError:
+                raise LispySyntaxError('Too many closing parentheses')
+            continue
+        q[-1].append(cst.Node((token.value,)))
+
+    if len(q) > 1:
+        raise LispySyntaxError('Too many opening parentheses')
+
+    return cst.Node(tuple(q[-1]))

@@ -12,12 +12,9 @@ class Token(object):
     Can represent a literal, operator, a name, or an atom.
     An atom is an ordered list of the previously mentioned elements
     """
-    # __slots__ = ['value']
+    __slots__ = ['value']
 
     def __init__(self, value):
-        """
-        :type value: list
-        """
         self.value = value
 
     def __repr__(self):
@@ -29,6 +26,29 @@ class Token(object):
         if not isinstance(other, Token):
             return False
         return self.value == other.value
+
+class Node(object):
+    """A node in the concrete syntax tree.
+
+    The state of this node is kept as a tuple
+    """
+    __slots__ = ['values']
+
+    def __init__(self, values):
+        """
+        :type values: tuple
+        """
+        self.values = values
+
+    def __eq__(self, other):
+        if other is None:
+            return False
+        if not isinstance(other, Node):
+            return False
+        return self.values == other.values
+
+    def __repr__(self):
+        return '<N {}>'.format(self.values)
 
 class NestingCommand(Token):
     """Represents a command to either increment or decrement the tree level

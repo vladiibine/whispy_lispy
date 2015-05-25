@@ -6,6 +6,7 @@ from whispy_lispy import lexer
 from whispy_lispy import syntax
 from whispy_lispy import cst
 
+
 def like_tokens(obj):
     """Wraps all the objects in the nested list (or the single object) with
     a cst.Token
@@ -22,6 +23,7 @@ def like_tokens(obj):
 
     return result
 
+
 class BaseLexerTestCase(unittest.TestCase):
     def assertEqualTokens(self, second, first, msg=None):
         """Like assertEqual, but wraps all the values with a cst.Token before
@@ -31,6 +33,8 @@ class BaseLexerTestCase(unittest.TestCase):
         return self.assertEqual(second, like_tokens(first), msg)
 
 
+# leaving this here as a model - for some weird reason
+@unittest.skip
 class LexerTestCase(BaseLexerTestCase):
 
     def test_lexer_parses_empty_text(self):
@@ -88,7 +92,6 @@ class LexerTestCase(BaseLexerTestCase):
         )
 
     def test_lexer_matches_quote(self):
-        # self.assertTrue(lexer.get_tokens("'''a b"), ["'", "'", "'", "a", "b"])
         self.assertEqualTokens(lexer.get_tokens("'''a b"), ["'", "'", "'", "a", "b"])  # noqa
 
     # These next tests are just to see the basic structure of the syntax tree
@@ -112,30 +115,35 @@ class LexerTestCase(BaseLexerTestCase):
             [[u'eval', u"'", [u'sum', 1, 2]]]
         )
 
-class FlatLexerTestCase(BaseLexerTestCase):
-    def _create_token(self, value):
-        return cst.Token([value])
 
+# For easily instantiating the nodes, and tokens
+def n(value):
+    if isinstance(value, tuple):
+        return cst.Node(value)
+    else:
+        return cst.Node((value,))
+
+t = cst.Token
+d = cst.DecrementNesting
+i = cst.IncrementNesting
+
+
+class FlatLexerTestCase(BaseLexerTestCase):
     def test_parses_empty_text(self):
         self.assertEqual(lexer.get_flat_token_list(''), [])
 
     def test_parses_known_types(self):
-        self.assertEqual(
+        self.assertSequenceEqual(
             lexer.get_flat_token_list('a 2 4.4 b #t #f'), [
-                cst.Token(['a']),
-                cst.Token([2]),
-                cst.Token([4.4]),
-                cst.Token(['b']),
-                cst.Token([True]),
-                cst.Token([False])]
-        )
+                t('a'),
+                t(2),
+                t(4.4),
+                t('b'),
+                t(True),
+                t(False)])
 
     def test_parses_nested_known_types(self):
-        t = self._create_token
-        i = cst.IncrementNesting
-        d = cst.DecrementNesting
-
-        self.assertEqual(
+        self.assertSequenceEqual(
             lexer.get_flat_token_list(
                 '(a b) (#f d) (e f (g (h 1 2)))'),
             [i, t('a'), t('b'), d, i, t(False), t('d'), d, i, t('e'),
@@ -143,22 +151,92 @@ class FlatLexerTestCase(BaseLexerTestCase):
         )
 
     def test_omits_newline(self):
-        t = self._create_token
-        i = cst.IncrementNesting
-        d = cst.DecrementNesting
-
-        self.assertEqual(
-            lexer.get_flat_token_list('\n\na\nb\n(1\n 2\n)'),
+        self.assertSequenceEqual(
+            lexer.get_flat_token_list('\n\t   \na\t\t\nb\n\n  \n(1\n   2\n)'),
             [t('a'), t('b'), i, t(1), t(2), d])
 
-    def test_accepts_non_matching_parentheses(self):
-        t = self._create_token
-        i = cst.IncrementNesting
-        d = cst.DecrementNesting
+    def test_parses_quote(self):
+        self.assertSequenceEqual(
+            lexer.get_flat_token_list("(def x '(a 1 2))"),
+            [i, t('def'), t('x'), t('\''), i, t('a'), t(1), t(2), d, d]
+        )
 
-        self.assertEqual(
+    def test_accepts_non_matching_parentheses(self):
+        self.assertSequenceEqual(
             lexer.get_flat_token_list('))a b ))('),
-            [
-                d, d, t('a'), t('b'), d, d, i
-            ]
+            [d, d, t('a'), t('b'), d, d, i])
+
+
+class ConcreteSyntaxTreeTestCase(unittest.TestCase):
+    def test_empty_token_list(self):
+        self.assertEqual(lexer.get_concrete_syntax_tree([]), cst.Node(()))
+
+    def test_single_element(self):
+        self.assertEqual(
+            lexer.get_concrete_syntax_tree([t('_a')]),
+            n(n('_a'))
+        )
+
+    def test_simple_atom(self):
+        self.assertEqual(
+            lexer.get_concrete_syntax_tree([i, t('a_'), t('b'), d]),
+            n(n((n('a_'), n('b'))))
+        )
+
+    def test_2_top_level_nodes_and_2_level_nesting(self):
+        self.assertEqual(
+            # (define x (+ 1 2)) 4
+            lexer.get_concrete_syntax_tree(
+                [i, t('def'), t('x'), i, t('sum'), t(1), t(2), d, d, t(4)]
+            ),
+            n((n((n('def'), n('x'), n((n('sum'), n(1), n(2))))), n(4)))
+        )
+
+    def test_5_nesting_levels_and_2_outmost_nodes(self):
+        actual = lexer.get_concrete_syntax_tree(
+                # 4 (define x (+ 5 4 ((lambda (x) (+ 3 x))1)))
+                [t(4), i, t('def'), t('z'), i, t('sum'), t(5), t(6), i, i, t('lambda'), i, t('x'), d, i, t('sum'), t(7), t('y'), d, d, t(1), d, d, d]  # noqa
+            )
+
+        expected = n((
+            n(4),
+            n((
+                n('def'),
+                n('z'),
+                n((
+                    n('sum'),
+                    n(5),
+                    n(6),
+                    n((
+                        n((
+                            n('lambda'),
+                            n(n('x')),
+                            n((
+                                n('sum'),
+                                n(7),
+                                n('y'))),
+                        )),
+                        n(1)
+                    ))))))))
+        self.assertEqual(actual, expected)
+
+    def test_blow_up_if_too_few_closing_parentheses(self):
+        self.assertRaises(
+            syntax.LispySyntaxError,
+            lexer.get_concrete_syntax_tree,
+            [i]
+        )
+
+    def test_blow_up_on_too_few_opening_parentheses(self):
+        self.assertRaises(
+            syntax.LispySyntaxError,
+            lexer.get_concrete_syntax_tree,
+            [d]
+        )
+
+    def test_syntax_error_when_parentheses_mismatch(self):
+        self.assertRaises(
+            syntax.LispySyntaxError,
+            lexer.get_concrete_syntax_tree,
+            [d, t(0), i]
         )
