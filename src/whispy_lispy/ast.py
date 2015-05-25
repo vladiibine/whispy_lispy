@@ -5,19 +5,13 @@ import six
 from whispy_lispy import exceptions
 
 
-
 DEFINITION = 'def'
 QUOTE = "'"
 EVAL = "eval"
 
-class SymbolMeta(type):
-    def __instancecheck__(self, instance):
-        if isinstance(instance, six.string_types):
-            return True
-
 class Symbol(object):
-    __metaclass__ = SymbolMeta
-
+    """Represents 'names' in a namespace... so functions or 'variables'
+    """
     def __init__(self, value):
         self.value = value
 
@@ -45,6 +39,11 @@ class Symbol(object):
 
 
 class Literal(object):
+    """Represents a direct value (int, and float for now) - will most likely
+    add bool and list.
+
+    Less likely, but probably, add some mappings.
+    """
     def __init__(self, value):
         self.value = value
 
@@ -220,7 +219,7 @@ class Apply(object):
 
         # TODO - find nicer say to check for symbols that aren't values
         # By this i mean that the lexer must RETURN symbols and not strings
-        if isinstance(tree[0], Symbol):
+        if isinstance(tree[0], six.string_types):
             from whispy_lispy import parser
             return parser.get_ast(tree)
 

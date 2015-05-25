@@ -26,7 +26,8 @@ class ParserTests(unittest.TestCase):
 
     def test_parse_implicit_apply(self):
         self.assertEqual(
-            parser.get_ast([['asdf', 3, 4]]), [ast.Apply(ast.Symbol('asdf'), ast.Literal(3), ast.Literal(4))])
+            parser.get_ast([['asdf', 3, 4]]),
+            [ast.Apply(ast.Symbol('asdf'), ast.Literal(3), ast.Literal(4))])
 
     def test_parse_assigning_from_assigned_value(self):
         self.assertEqual(
