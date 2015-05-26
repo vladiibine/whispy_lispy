@@ -72,7 +72,14 @@ class ConcreteSyntaxNode(object):
     def is_symbol(self):
         return (
             len(self.values) == 1 and
-            isinstance(self.values[0], six.string_types)
+            isinstance(self.values[0], six.string_types) and
+            not self.values[0] == '\''
+        )
+
+    def is_quote(self):
+        return (
+            len(self.values) == 1 and
+            self.values[0] == '\''
         )
 
 class RootConcreteSyntaxnode(ConcreteSyntaxNode):

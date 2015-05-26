@@ -34,12 +34,47 @@ def get_ast2(cstree):
     :type cstree: cst.ConcreteSyntaxNode
     :rtype: ast.AbstractSyntaxNode
     """
-    values = []
 
+    result = transform_one_to_one(cstree)
+    return mutate_tree_structure(result)
+
+def mutate_tree_structure(tree):
+    """Apply transformations to the abstract syntax tree that alter its
+    structure
+
+    I wonder if this is really necessary... I mean just replace the quote
+    with an Apply('quote', X), and we can keep the structure, and just mutate
+    one element "'" -> "quote"...we'll see
+
+    :type tree: ast.AbstractSyntaxNode
+    :rtype: ast.AbstractSyntaxNode
+    """
+    if not tree.is_leaf():
+        new_children = []
+        if isinstance(tree, ast.Quote2):
+            iterable_values = tree.values[1:]
+        else:
+            iterable_values = tree.values
+
+        for child in iterable_values:
+            new_children.append(mutate_tree_structure(child))
+
+        return tree.alike(tuple(new_children))
+
+    return tree
+
+
+def transform_one_to_one(cstree):
+    """Transform a concrete syntax tree into an abstract one, preserving the
+    tree structure
+
+    :type cstree: cst.ConcreteSyntaxNode
+    :rtype: ast.AbstractSyntaxNode
+    """
+    values = []
     if cstree.is_leaf():
         node_class = determine_operation_type(cstree)
         return _commit_ast_node(cstree.values, node_class)
-
     for value in cstree.values:
         if value.is_leaf():
             node_class = determine_operation_type(value)
@@ -47,6 +82,7 @@ def get_ast2(cstree):
         else:
             values.append(get_ast2(value))
     return _commit_ast_node(values, determine_operation_type(cstree))
+
 
 def determine_operation_type(cstree):
     """Determine the operation type that this node corresponds to
@@ -57,6 +93,8 @@ def determine_operation_type(cstree):
         return ast.RootAbstractSyntaxNode
 
     if not cstree.is_leaf():
+        if cstree.values[0].is_quote():
+            return ast.Quote2
         if cstree.values[0].is_symbol():
             return ast.Apply2
 

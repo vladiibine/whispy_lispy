@@ -139,8 +139,30 @@ class ParserOperationsTestCase(unittest.TestCase):
         self.assertIsInstance(result_ast.values[0], ast.Apply2)
 
     def test_nested_apply(self):
-        result_ast = parser.get_ast2(rcn(cn((cn('a'), cn('b'), cn((cn('c'), cn(1)))))))  # noqa
+        result_ast = parser.get_ast2(
+            rcn(cn((cn('a'), cn('b'), cn((cn('c'), cn(1)))))))
 
         self.assertIsInstance(result_ast.values[0], ast.Apply2)
         self.assertIsInstance(result_ast.values[0].values[2], ast.Apply2)
+
+    def test_simple_quote(self):
+        result_ast = parser.get_ast2(rcn(cn((cn('\''), cn('a')))))
+
+        self.assertIsInstance(result_ast.values[0], ast.Quote2)
+
+class ParserHelpers(unittest.TestCase):
+    def test_mutate_ast_quote_by_removing_quote_symbol(self):
+        result_ast = parser.mutate_tree_structure(
+            ast.Quote2((an('\''), an('x'))))
+
+        self.assertIsInstance(result_ast, ast.Quote2)
+        self.assertEqual(len(result_ast.values), 1)
+
+    def test_mutate_nested_quotes_by_removing_quote_symbols(self):
+        resulted_ast = parser.mutate_tree_structure(
+            ast.Quote2((an('\''), an((an('a'), ast.Quote2((an('\''), an('b')))))))  # noqa
+        )
+
+        self.assertIsInstance(resulted_ast, ast.Quote2)
+        self.assertIsInstance(resulted_ast.values[0].values[1], ast.Quote2)
 

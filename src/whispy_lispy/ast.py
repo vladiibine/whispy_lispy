@@ -269,7 +269,6 @@ class AbstractSyntaxNode(object):
     def __init__(self, values):
         """
         :type values: tuple
-        :return:
         """
         self.values = values
 
@@ -290,6 +289,11 @@ class AbstractSyntaxNode(object):
         return all(
             not isinstance(elem, AbstractSyntaxNode) for elem in self.values)
 
+    def alike(self, values):
+        """Create a new node, with the same type as the current one
+        """
+        return self.__class__(values)
+
 class RootAbstractSyntaxNode(AbstractSyntaxNode):
     """The abstract node marking the root of the node hierarchy
     """
@@ -298,7 +302,16 @@ class RootAbstractSyntaxNode(AbstractSyntaxNode):
 
 
 class Apply2(AbstractSyntaxNode):
-    """Abstract apply
-    """
+    """Abstract apply"""
+    __slots__ = ['values']
+
     def __repr__(self):
         return '<Apply {}>'.format(self.values)
+
+class Quote2(AbstractSyntaxNode):
+    """Abstract quote"""
+    __slots__ = ['values']
+
+    def __repr__(self):
+        return '<Quote {}>'.format(self.values)
+
