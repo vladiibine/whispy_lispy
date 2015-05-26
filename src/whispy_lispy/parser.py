@@ -37,4 +37,38 @@ def get_ast2(cstree):
     """
     values = []
 
-    return ast.RootAbstractSyntaxNode(tuple(values))
+    if cstree.is_leaf():
+        return _commit_ast_node(cstree, cstree.values)
+
+    for value in cstree.values:
+        if value.is_leaf():
+            values.append(ast.AbstractSyntaxNode(value.values))
+        else:
+            values.append(get_ast2(value))
+
+    return _commit_ast_node(cstree, values)
+
+def _commit_ast_node(cstree, values):
+    if cstree.is_root():
+        return ast.RootAbstractSyntaxNode(tuple(values))
+    else:
+        return ast.AbstractSyntaxNode(tuple(values))
+
+
+# Obsolete function, but it broke py.test during the tests, so i'll keep
+# it as an example.
+def get_ast_that_breaks_py_test(cstree):
+    """Convert the concrete syntax tree into an abstract one
+
+    :type cstree: cst.ConcreteSyntaxNode
+    :rtype: ast.AbstractSyntaxNode
+    """
+    values = []
+
+    for value in cstree.values:
+        values.append(value)
+
+    if cstree.is_root():
+        return ast.RootAbstractSyntaxNode(tuple(values))
+    else:
+        return ast.AbstractSyntaxNode(tuple(values))

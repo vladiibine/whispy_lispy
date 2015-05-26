@@ -6,6 +6,9 @@ Lexer should return tokens that are instances of classes found here
 """
 from __future__ import unicode_literals
 
+class CSTError(Exception):
+    pass
+
 class Token(object):
     """Concrete syntax tree node.
 
@@ -36,8 +39,16 @@ class ConcreteSyntaxNode(object):
 
     def __init__(self, values):
         """
+        The tuple either contains other nodes, or values. Not both!
         :type values: tuple
         """
+        types = set(type(elem) for elem in values)
+        if len(types) > 1:
+            raise CSTError(
+                "Concrete Syntax Node should contain either other nodes, or "
+                "simple values, not both. This node contains {} value(s): {}"
+                .format(len(types), values)
+            )
         self.values = values
 
     def __eq__(self, other):
@@ -52,6 +63,9 @@ class ConcreteSyntaxNode(object):
 
     def is_root(self):
         return isinstance(self, RootConcreteSyntaxnode)
+
+    def is_leaf(self):
+        return all(not isinstance(elem, self.__class__) for elem in self.values)  # noqa
 
 class RootConcreteSyntaxnode(ConcreteSyntaxNode):
     def __repr__(self):

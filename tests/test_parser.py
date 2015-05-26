@@ -1,6 +1,8 @@
 # -*- coding utf-8 -*-
 from __future__ import unicode_literals
 import unittest
+import pytest
+
 from whispy_lispy import parser, ast, cst
 
 
@@ -86,14 +88,26 @@ class Parser2TestCase(unittest.TestCase):
     def test_parses_empty_non_root_node(self):
         self.assertEqual(parser.get_ast2(cn(())), an(()))
 
-    def test_parses_single_element(self):
-        self.assertEqual(parser.get_ast2(cn(cn(1))), ran(an(1)))
+    def test_parses_non_empty_non_root(self):
+        self.assertEqual(parser.get_ast2(cn(2)), an(2))
 
-    def simple_implicit_apply(self):
+    def test_parses_single_element(self):
+        self.assertEqual(parser.get_ast2(cn(cn(1))), an(an(1)))
+
+    @unittest.skip('This is an example of how to break py.test')
+    def test_simple_implicit_apply_dummy(self):
+        # I can only hope that the functionality doesn't change enough
+        # for the test to still break in the desired way
         self.assertEqual(
-            parser.get_ast2(cn(cn((cn('a'), cn('b'))))),
-            ran(an())
+            parser.get_ast_that_breaks_py_test(cn(cn((cn('a'), cn('b'))))),
+            # ran(an())
+            1
         )
 
+    def test_z1_eq_z1(self):
+        # This test most likely won't be found if the previous test, marked
+        # to be skipped, is being run - this is a bug in pytest... i think
+        self.assertEqual(1, 1)
 
 
+unittest.main()
