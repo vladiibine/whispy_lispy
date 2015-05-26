@@ -286,6 +286,10 @@ class AbstractSyntaxNode(object):
     def is_root(self):
         return isinstance(self, RootAbstractSyntaxNode)
 
+    def is_leaf(self):
+        return all(
+            not isinstance(elem, AbstractSyntaxNode) for elem in self.values)
+
 class RootAbstractSyntaxNode(AbstractSyntaxNode):
     """The abstract node marking the root of the node hierarchy
     """
