@@ -151,4 +151,4 @@ def get_concrete_syntax_tree(token_list):
     if len(q) > 1:
         raise LispySyntaxError('Too many opening parentheses')
 
-    return cst.ConcreteSyntaxNode(tuple(q[-1]))
+    return cst.RootConcreteSyntaxnode(tuple(q[-1]))

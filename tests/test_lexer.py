@@ -118,10 +118,18 @@ class LexerTestCase(BaseLexerTestCase):
 
 # For easily instantiating the nodes, and tokens
 def n(value):
+    """Return an ConcreteSyntaxNode """
+    return create_node_type(value, cst.ConcreteSyntaxNode)
+
+def rn(value):
+    """Return the root ConcreteSyntaxNode """
+    return create_node_type(value, cst.RootConcreteSyntaxnode)
+
+def create_node_type(value, node_cls):
     if isinstance(value, tuple):
-        return cst.ConcreteSyntaxNode(value)
+        return node_cls(value)
     else:
-        return cst.ConcreteSyntaxNode((value,))
+        return node_cls((value,))
 
 t = cst.Token
 d = cst.DecrementNesting
@@ -169,18 +177,18 @@ class FlatLexerTestCase(BaseLexerTestCase):
 
 class ConcreteSyntaxTreeTestCase(unittest.TestCase):
     def test_empty_token_list(self):
-        self.assertEqual(lexer.get_concrete_syntax_tree([]), n(()))
+        self.assertEqual(lexer.get_concrete_syntax_tree([]), rn(()))
 
     def test_single_element(self):
         self.assertEqual(
             lexer.get_concrete_syntax_tree([t('_a')]),
-            n(n('_a'))
+            rn(n('_a'))
         )
 
     def test_simple_atom(self):
         self.assertEqual(
             lexer.get_concrete_syntax_tree([i, t('a_'), t('b'), d]),
-            n(n((n('a_'), n('b'))))
+            rn(n((n('a_'), n('b'))))
         )
 
     def test_2_top_level_nodes_and_2_level_nesting(self):
@@ -189,7 +197,7 @@ class ConcreteSyntaxTreeTestCase(unittest.TestCase):
             lexer.get_concrete_syntax_tree(
                 [i, t('def'), t('x'), i, t('sum'), t(1), t(2), d, d, t(4)]
             ),
-            n((n((n('def'), n('x'), n((n('sum'), n(1), n(2))))), n(4)))
+            rn((n((n('def'), n('x'), n((n('sum'), n(1), n(2))))), n(4)))
         )
 
     def test_5_nesting_levels_and_2_outmost_nodes(self):
@@ -198,7 +206,7 @@ class ConcreteSyntaxTreeTestCase(unittest.TestCase):
                 [t(4), i, t('def'), t('z'), i, t('sum'), t(5), t(6), i, i, t('lambda'), i, t('x'), d, i, t('sum'), t(7), t('y'), d, d, t(1), d, d, d]  # noqa
             )
 
-        expected = n((
+        expected = rn((
             n(4),
             n((
                 n('def'),
