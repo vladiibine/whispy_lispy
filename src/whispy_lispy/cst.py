@@ -5,6 +5,7 @@ Concrete syntax tree stuff
 Lexer should return tokens that are instances of classes found here
 """
 from __future__ import unicode_literals
+import six
 
 class CSTError(Exception):
     pass
@@ -65,7 +66,14 @@ class ConcreteSyntaxNode(object):
         return isinstance(self, RootConcreteSyntaxnode)
 
     def is_leaf(self):
-        return all(not isinstance(elem, self.__class__) for elem in self.values)  # noqa
+        return all(
+            not isinstance(elem, ConcreteSyntaxNode) for elem in self.values)
+
+    def is_symbol(self):
+        return (
+            len(self.values) == 1 and
+            isinstance(self.values[1], six.string_types)
+        )
 
 class RootConcreteSyntaxnode(ConcreteSyntaxNode):
     def __repr__(self):

@@ -3,7 +3,6 @@
 Will accept a tree of allowed symbols, and construct an abstract syntax tree
 """
 from __future__ import unicode_literals, absolute_import
-from collections import deque
 
 from whispy_lispy import ast, cst
 
@@ -35,40 +34,35 @@ def get_ast2(cstree):
     :type cstree: cst.ConcreteSyntaxNode
     :rtype: ast.AbstractSyntaxNode
     """
-    values = []
-
-    if cstree.is_leaf():
-        return _commit_ast_node(cstree, cstree.values)
-
-    for value in cstree.values:
-        if value.is_leaf():
-            values.append(ast.AbstractSyntaxNode(value.values))
-        else:
-            values.append(get_ast2(value))
-
-    return _commit_ast_node(cstree, values)
-
-def _commit_ast_node(cstree, values):
-    if cstree.is_root():
-        return ast.RootAbstractSyntaxNode(tuple(values))
-    else:
-        return ast.AbstractSyntaxNode(tuple(values))
+    return translate_directly_cst_to_ast(cstree)
 
 
-# Obsolete function, but it broke py.test during the tests, so i'll keep
-# it as an example.
-def get_ast_that_breaks_py_test(cstree):
-    """Convert the concrete syntax tree into an abstract one
+def translate_directly_cst_to_ast(cstree):
+    """Transforms the CSNode elements directly into ASNodes, keeping the
+    structure of the tree intact
 
     :type cstree: cst.ConcreteSyntaxNode
     :rtype: ast.AbstractSyntaxNode
     """
     values = []
-
+    is_root = cstree.is_root()
+    if cstree.is_leaf():
+        return _commit_ast_node(is_root, cstree.values)
     for value in cstree.values:
-        values.append(value)
+        if value.is_leaf():
+            values.append(ast.AbstractSyntaxNode(value.values))
+        else:
+            values.append(translate_directly_cst_to_ast(value))
+    return _commit_ast_node(is_root, values)
 
-    if cstree.is_root():
+
+def _commit_ast_node(is_root, values):
+    """
+    :type is_root: bool
+    :param values:
+    :return:
+    """
+    if is_root:
         return ast.RootAbstractSyntaxNode(tuple(values))
     else:
         return ast.AbstractSyntaxNode(tuple(values))

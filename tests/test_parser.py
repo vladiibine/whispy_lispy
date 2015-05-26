@@ -81,33 +81,31 @@ def ran(val):
     """Return the root AbstractSyntaxNode"""
     return create_any_node(val, ast.RootAbstractSyntaxNode)
 
+
 class Parser2TestCase(unittest.TestCase):
     def test_parses_empty_root_node(self):
-        self.assertEqual(parser.get_ast2(rcn(())), ran(()))
+        self.assertEqual(
+            parser.translate_directly_cst_to_ast(rcn(())), ran(()))
 
     def test_parses_empty_non_root_node(self):
-        self.assertEqual(parser.get_ast2(cn(())), an(()))
+        self.assertEqual(
+            parser.translate_directly_cst_to_ast(cn(())), an(()))
 
     def test_parses_non_empty_non_root(self):
-        self.assertEqual(parser.get_ast2(cn(2)), an(2))
+        self.assertEqual(parser.translate_directly_cst_to_ast(cn(2)), an(2))
 
     def test_parses_single_element(self):
-        self.assertEqual(parser.get_ast2(cn(cn(1))), an(an(1)))
-
-    @unittest.skip('This is an example of how to break py.test')
-    def test_simple_implicit_apply_dummy(self):
-        # I can only hope that the functionality doesn't change enough
-        # for the test to still break in the desired way
         self.assertEqual(
-            parser.get_ast_that_breaks_py_test(cn(cn((cn('a'), cn('b'))))),
-            # ran(an())
-            1
-        )
+            parser.translate_directly_cst_to_ast(cn(cn(1))), an(an(1)))
 
-    def test_z1_eq_z1(self):
-        # This test most likely won't be found if the previous test, marked
-        # to be skipped, is being run - this is a bug in pytest... i think
-        self.assertEqual(1, 1)
+    def test_parse_simple_nested_structure(self):
+        self.assertEqual(
+            parser.translate_directly_cst_to_ast(cn((cn('a'), cn(2)))),
+            an((an('a'), an(2))))
 
+    def test_parse_more_nested_structure(self):
+        actual = parser.translate_directly_cst_to_ast(
+            rcn((cn(1), cn((cn(2), cn((cn(3), cn(4), cn(5))))), cn(6))))
+        expected = ran((an(1), an((an(2), an((an(3), an(4), an(5))))), an(6)))
 
-unittest.main()
+        self.assertEqual(actual, expected)
