@@ -50,6 +50,9 @@ class ConcreteSyntaxNode(object):
     def __repr__(self):
         return '<cN {}>'.format(self.values)
 
+    def is_root(self):
+        return isinstance(self, RootConcreteSyntaxnode)
+
 class RootConcreteSyntaxnode(ConcreteSyntaxNode):
     def __repr__(self):
         return '<RcN {}>'.format(self.values)

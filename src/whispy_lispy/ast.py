@@ -276,14 +276,17 @@ class AbstractSyntaxNode(object):
     def __eq__(self, other):
         if other is None:
             return False
-        if not isinstance(other, self.__class__):
+        if self.__class__ != other.__class__:
             return False
         return self.values == other.values
 
     def __repr__(self):
         return '<aN {}>'.format(self.values)
 
-class AbstractSyntaxRoot(AbstractSyntaxNode):
+    def is_root(self):
+        return isinstance(self, RootAbstractSyntaxNode)
+
+class RootAbstractSyntaxNode(AbstractSyntaxNode):
     """The abstract node marking the root of the node hierarchy
     """
     def __repr__(self):

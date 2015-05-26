@@ -57,9 +57,13 @@ class ParserTests(unittest.TestCase):
         )
 
 def cn(val):
-    """Return a ConcreteSyntaxNode
-    """
+    """Return a ConcreteSyntaxNode """
     return create_any_node(val, cst.ConcreteSyntaxNode)
+
+def rcn(val):
+    """Return the root ConcreteSyntaxNode"""
+    return create_any_node(val, cst.RootConcreteSyntaxnode)
+
 
 def create_any_node(val, node_cls):
     if isinstance(val, tuple):
@@ -68,21 +72,27 @@ def create_any_node(val, node_cls):
         return node_cls((val,))
 
 def an(val):
-    """Return an AbstractSyntaxnode
-    """
+    """Return an AbstractSyntaxNode """
     return create_any_node(val, ast.AbstractSyntaxNode)
+
+def ran(val):
+    """Return the root AbstractSyntaxNode"""
+    return create_any_node(val, ast.RootAbstractSyntaxNode)
 
 class Parser2TestCase(unittest.TestCase):
     def test_parses_empty_root_node(self):
+        self.assertEqual(parser.get_ast2(rcn(())), ran(()))
+
+    def test_parses_empty_non_root_node(self):
         self.assertEqual(parser.get_ast2(cn(())), an(()))
 
     def test_parses_single_element(self):
-        self.assertEqual(parser.get_ast2(cn(cn(1))), an(an(1)))
+        self.assertEqual(parser.get_ast2(cn(cn(1))), ran(an(1)))
 
     def simple_implicit_apply(self):
         self.assertEqual(
             parser.get_ast2(cn(cn((cn('a'), cn('b'))))),
-            an(an())
+            ran(an())
         )
 
 

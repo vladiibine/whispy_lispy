@@ -35,7 +35,6 @@ def get_ast2(cstree):
     :type cstree: cst.ConcreteSyntaxNode
     :rtype: ast.AbstractSyntaxNode
     """
-    q = deque([[]])
+    values = []
 
-
-    return ast.AbstractSyntaxNode(())
+    return ast.RootAbstractSyntaxNode(tuple(values))
