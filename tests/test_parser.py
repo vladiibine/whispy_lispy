@@ -1,7 +1,6 @@
 # -*- coding utf-8 -*-
 from __future__ import unicode_literals
 import unittest
-import pytest
 
 from whispy_lispy import parser, ast, cst
 
@@ -83,29 +82,45 @@ def ran(val):
 
 
 class Parser2TestCase(unittest.TestCase):
+    def _to_chained_list(self, node):
+        if node.is_leaf():
+            return node.values
+
+        result = []
+        for elem in node.values:
+            result.append(self._to_chained_list(elem))
+
+        return result
+
+    def assertNodeStructureEqual(self, n1, n2, msg=None):
+        self.assertEqual(
+            self._to_chained_list(n1), self._to_chained_list(n2), msg)
+
     def test_parses_empty_root_node(self):
         self.assertEqual(
-            parser.translate_directly_cst_to_ast(rcn(())), ran(()))
+            parser.get_ast2(rcn(())), ran(()))
 
     def test_parses_empty_non_root_node(self):
         self.assertEqual(
-            parser.translate_directly_cst_to_ast(cn(())), an(()))
+            parser.get_ast2(cn(())), an(()))
 
     def test_parses_non_empty_non_root(self):
-        self.assertEqual(parser.translate_directly_cst_to_ast(cn(2)), an(2))
+        self.assertEqual(parser.get_ast2(cn(2)), an(2))
 
     def test_parses_single_element(self):
         self.assertEqual(
-            parser.translate_directly_cst_to_ast(cn(cn(1))), an(an(1)))
+            parser.get_ast2(cn(cn(1))), an(an(1)))
 
     def test_parse_simple_nested_structure(self):
         self.assertEqual(
-            parser.translate_directly_cst_to_ast(cn((cn('a'), cn(2)))),
+            parser.get_ast2(cn((cn('a'), cn(2)))),
             an((an('a'), an(2))))
 
     def test_parse_more_nested_structure(self):
-        actual = parser.translate_directly_cst_to_ast(
+        actual = parser.get_ast2(
             rcn((cn(1), cn((cn(2), cn((cn(3), cn(4), cn(5))))), cn(6))))
         expected = ran((an(1), an((an(2), an((an(3), an(4), an(5))))), an(6)))
 
+        self._to_chained_list(actual)
+        self._to_chained_list(expected)
         self.assertEqual(actual, expected)

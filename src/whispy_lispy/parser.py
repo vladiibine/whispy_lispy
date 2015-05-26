@@ -34,35 +34,39 @@ def get_ast2(cstree):
     :type cstree: cst.ConcreteSyntaxNode
     :rtype: ast.AbstractSyntaxNode
     """
-    return translate_directly_cst_to_ast(cstree)
-
-
-def translate_directly_cst_to_ast(cstree):
-    """Transforms the CSNode elements directly into ASNodes, keeping the
-    structure of the tree intact
-
-    :type cstree: cst.ConcreteSyntaxNode
-    :rtype: ast.AbstractSyntaxNode
-    """
     values = []
-    is_root = cstree.is_root()
+
     if cstree.is_leaf():
-        return _commit_ast_node(is_root, cstree.values)
+        node_class = determine_operation_type(cstree)
+        return _commit_ast_node(cstree.values, node_class)
+
     for value in cstree.values:
         if value.is_leaf():
-            values.append(ast.AbstractSyntaxNode(value.values))
+            node_class = determine_operation_type(value)
+            values.append(_commit_ast_node(value.values, node_class))
         else:
-            values.append(translate_directly_cst_to_ast(value))
-    return _commit_ast_node(is_root, values)
+            values.append(get_ast2(value))
+    return _commit_ast_node(values, determine_operation_type(cstree))
 
-
-def _commit_ast_node(is_root, values):
+def determine_operation_type(cstree):
+    """Determine the operation type that this node corresponds to
+    :param cstree:
+    :return:
     """
-    :type is_root: bool
+    if cstree.is_root():
+        return ast.RootAbstractSyntaxNode
+
+    if not cstree.is_leaf():
+        if cstree.values[0].is_symbol():
+            return ast.Apply2
+
+    # generic node that doesn't mean anything
+    return ast.AbstractSyntaxNode
+
+
+def _commit_ast_node(values, node_cls):
+    """
     :param values:
     :return:
     """
-    if is_root:
-        return ast.RootAbstractSyntaxNode(tuple(values))
-    else:
-        return ast.AbstractSyntaxNode(tuple(values))
+    return node_cls(tuple(values))
