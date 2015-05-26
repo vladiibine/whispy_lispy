@@ -1,8 +1,7 @@
 # -*- coding utf-8 -*-
 from __future__ import unicode_literals
 import unittest
-from whispy_lispy import parser
-from whispy_lispy import ast
+from whispy_lispy import parser, ast, cst
 
 
 class ParserTests(unittest.TestCase):
@@ -56,3 +55,35 @@ class ParserTests(unittest.TestCase):
                         ast.Literal(1),
                         ast.Literal(2))]))]
         )
+
+def cn(val):
+    """Return a ConcreteSyntaxNode
+    """
+    return create_any_node(val, cst.ConcreteSyntaxNode)
+
+def create_any_node(val, node_cls):
+    if isinstance(val, tuple):
+        return node_cls(val)
+    else:
+        return node_cls((val,))
+
+def an(val):
+    """Return an AbstractSyntaxnode
+    """
+    return create_any_node(val, ast.AbstractSyntaxNode)
+
+class Parser2TestCase(unittest.TestCase):
+    def test_parses_empty_root_node(self):
+        self.assertEqual(parser.get_ast2(cn(())), an(()))
+
+    def test_parses_single_element(self):
+        self.assertEqual(parser.get_ast2(cn(cn(1))), an(an(1)))
+
+    def simple_implicit_apply(self):
+        self.assertEqual(
+            parser.get_ast2(cn(cn((cn('a'), cn('b'))))),
+            an(an())
+        )
+
+
+

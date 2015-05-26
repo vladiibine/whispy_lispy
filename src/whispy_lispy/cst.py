@@ -27,7 +27,7 @@ class Token(object):
             return False
         return self.value == other.value
 
-class Node(object):
+class ConcreteSyntaxNode(object):
     """A node in the concrete syntax tree.
 
     The state of this node is kept as a tuple
@@ -43,12 +43,16 @@ class Node(object):
     def __eq__(self, other):
         if other is None:
             return False
-        if not isinstance(other, Node):
+        if not isinstance(other, self.__class__):
             return False
         return self.values == other.values
 
     def __repr__(self):
-        return '<N {}>'.format(self.values)
+        return '<cN {}>'.format(self.values)
+
+class RootConcreteSyntaxnode(ConcreteSyntaxNode):
+    def __repr__(self):
+        return '<RcN {}>'.format(self.values)
 
 class NestingCommand(Token):
     """Represents a command to either increment or decrement the tree level

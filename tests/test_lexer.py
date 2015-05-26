@@ -119,9 +119,9 @@ class LexerTestCase(BaseLexerTestCase):
 # For easily instantiating the nodes, and tokens
 def n(value):
     if isinstance(value, tuple):
-        return cst.Node(value)
+        return cst.ConcreteSyntaxNode(value)
     else:
-        return cst.Node((value,))
+        return cst.ConcreteSyntaxNode((value,))
 
 t = cst.Token
 d = cst.DecrementNesting
@@ -169,7 +169,7 @@ class FlatLexerTestCase(BaseLexerTestCase):
 
 class ConcreteSyntaxTreeTestCase(unittest.TestCase):
     def test_empty_token_list(self):
-        self.assertEqual(lexer.get_concrete_syntax_tree([]), cst.Node(()))
+        self.assertEqual(lexer.get_concrete_syntax_tree([]), n(()))
 
     def test_single_element(self):
         self.assertEqual(

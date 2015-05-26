@@ -260,3 +260,38 @@ class Apply(object):
             raise exceptions.LispyUnboundSymbolError(
                 'Missing symbol name: "{}"'.format(self.symbol))
         return func(scope, self.args)
+
+class AbstractSyntaxNode(object):
+    """An abstract syntax node
+    """
+    __slots__ = ['values']
+
+    def __init__(self, values):
+        """
+        :type values: tuple
+        :return:
+        """
+        self.values = values
+
+    def __eq__(self, other):
+        if other is None:
+            return False
+        if not isinstance(other, self.__class__):
+            return False
+        return self.values == other.values
+
+    def __repr__(self):
+        return '<aN {}>'.format(self.values)
+
+class AbstractSyntaxRoot(AbstractSyntaxNode):
+    """The abstract node marking the root of the node hierarchy
+    """
+    def __repr__(self):
+        return '<RaN {}>'.format(self.values)
+
+
+class Apply2(AbstractSyntaxNode):
+    """Abstract apply
+    """
+    def __repr__(self):
+        return '<Apply {}>'.format(self.values)

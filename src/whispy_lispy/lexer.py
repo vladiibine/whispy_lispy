@@ -142,13 +142,13 @@ def get_concrete_syntax_tree(token_list):
         if token is cst.DecrementNesting:
             wrap_up = q.pop()
             try:
-                q[-1].append(cst.Node(tuple(wrap_up)))
+                q[-1].append(cst.ConcreteSyntaxNode(tuple(wrap_up)))
             except IndexError:
                 raise LispySyntaxError('Too many closing parentheses')
             continue
-        q[-1].append(cst.Node((token.value,)))
+        q[-1].append(cst.ConcreteSyntaxNode((token.value,)))
 
     if len(q) > 1:
         raise LispySyntaxError('Too many opening parentheses')
 
-    return cst.Node(tuple(q[-1]))
+    return cst.ConcreteSyntaxNode(tuple(q[-1]))
