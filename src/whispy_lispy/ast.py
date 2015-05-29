@@ -312,3 +312,9 @@ class Quote2(AbstractSyntaxNode):
     def __repr__(self):
         return '<Quote {}>'.format(self.values)
 
+class OperatorQuote(AbstractSyntaxNode):
+    """Represents the quote operator ' """
+    __slots__ = ['values']
+
+    def __repr__(self):
+        return '<QuoteOP>'

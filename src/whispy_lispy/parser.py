@@ -49,17 +49,34 @@ def mutate_tree_structure(tree):
     :type tree: ast.AbstractSyntaxNode
     :rtype: ast.AbstractSyntaxNode
     """
+    # TODO - transform >>> ' a b ...<<< into >>> (quote a) b ... <<< - no hurry
+    # if not tree.is_leaf():
+    #     new_children = []
+    #     if isinstance(tree, ast.Quote2):
+    #         iterable_values = tree.values[1:]
+    #     else:
+    #         iterable_values = tree.values
+    #
+    #     for child in iterable_values:
+    #         new_children.append(mutate_tree_structure(child))
+    #
+    #     return tree.alike(tuple(new_children))
+    # if isinstance(tree, ast.Apply2):
+    #     if
     if not tree.is_leaf():
         new_children = []
-        if isinstance(tree, ast.Quote2):
-            iterable_values = tree.values[1:]
-        else:
-            iterable_values = tree.values
-
-        for child in iterable_values:
-            new_children.append(mutate_tree_structure(child))
-
-        return tree.alike(tuple(new_children))
+        skip_next = False
+        for idx, child in enumerate(tree.values):
+            if skip_next:
+                skip_next = False
+                continue
+            # Might be the case that the quote is the last element
+            # Must throw some kind of error or something
+            if isinstance(child, ast.OperatorQuote):
+                skip_next = True
+                new_children.append(
+                    mutate_tree_structure(
+                        ast.Apply2((ast.Quote2((tree.values[idx + 1], )),))))
 
     return tree
 
@@ -98,6 +115,8 @@ def determine_operation_type(cstree):
     else:
         if cstree.is_quote_function():
             return ast.Quote2
+        if cstree.is_quote_literal():
+            return ast.OperatorQuote
 
     # generic node that doesn't mean anything
     return ast.AbstractSyntaxNode
