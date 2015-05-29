@@ -262,8 +262,7 @@ class Apply(object):
         return func(scope, self.args)
 
 class AbstractSyntaxNode(object):
-    """An abstract syntax node
-    """
+    """An abstract syntax node"""
     __slots__ = ['values']
 
     def __init__(self, values):
@@ -290,13 +289,11 @@ class AbstractSyntaxNode(object):
             not isinstance(elem, AbstractSyntaxNode) for elem in self.values)
 
     def alike(self, values):
-        """Create a new node, with the same type as the current one
-        """
+        """Create a new node, with the same type as the current one"""
         return self.__class__(values)
 
 class RootAbstractSyntaxNode(AbstractSyntaxNode):
-    """The abstract node marking the root of the node hierarchy
-    """
+    """The abstract node marking the root of the node hierarchy"""
     def __repr__(self):
         return '<RaN {}>'.format(self.values)
 

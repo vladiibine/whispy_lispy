@@ -80,7 +80,7 @@ def transform_one_to_one(cstree):
             node_class = determine_operation_type(value)
             values.append(_commit_ast_node(value.values, node_class))
         else:
-            values.append(get_ast2(value))
+            values.append(transform_one_to_one(value))
     return _commit_ast_node(values, determine_operation_type(cstree))
 
 
@@ -93,10 +93,11 @@ def determine_operation_type(cstree):
         return ast.RootAbstractSyntaxNode
 
     if not cstree.is_leaf():
-        if cstree.values[0].is_quote():
-            return ast.Quote2
         if cstree.values[0].is_symbol():
             return ast.Apply2
+    else:
+        if cstree.is_quote_function():
+            return ast.Quote2
 
     # generic node that doesn't mean anything
     return ast.AbstractSyntaxNode

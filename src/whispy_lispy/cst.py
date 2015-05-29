@@ -76,10 +76,18 @@ class ConcreteSyntaxNode(object):
             not self.values[0] == '\''
         )
 
-    def is_quote(self):
+    def is_quote_literal(self):
+        """Recognize the ' symbol"""
         return (
             len(self.values) == 1 and
             self.values[0] == '\''
+        )
+
+    def is_quote_function(self):
+        """Recognize the `quote` function"""
+        return (
+            self.is_symbol() and
+            self.values[0] == 'quote'
         )
 
 class RootConcreteSyntaxnode(ConcreteSyntaxNode):

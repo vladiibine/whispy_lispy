@@ -146,9 +146,18 @@ class ParserOperationsTestCase(unittest.TestCase):
         self.assertIsInstance(result_ast.values[0].values[2], ast.Apply2)
 
     def test_simple_quote(self):
-        result_ast = parser.get_ast2(rcn(cn((cn('\''), cn('a')))))
+        result_ast = parser.get_ast2(rcn(cn((cn('quote'), cn('a')))))
 
-        self.assertIsInstance(result_ast.values[0], ast.Quote2)
+        self.assertIsInstance(result_ast.values[0], ast.Apply2)
+        self.assertIsInstance(result_ast.values[0].values[0], ast.Quote2)
+        self.assertTrue(len(result_ast.values[0].values), 2)
+
+    def test_apply_quote(self):
+        result_ast = parser.get_ast2(rcn((cn((cn('a'), cn('quote'), cn('b'))))))  # noqa
+
+        self.assertIsInstance(result_ast.values[0], ast.Apply2)
+        self.assertIsInstance(result_ast.values[0].values[0], ast.AbstractSyntaxNode)  # noqa
+        self.assertIsInstance(result_ast.values[0].values[1], ast.Quote2)
 
 class ParserHelpers(unittest.TestCase):
     def test_mutate_ast_quote_by_removing_quote_symbol(self):
