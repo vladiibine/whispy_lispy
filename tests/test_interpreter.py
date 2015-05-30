@@ -57,7 +57,7 @@ class InterpreterTestCase(unittest.TestCase):
         ))
 
         # Mock a native sum function
-        scope = {'sum': lambda *nums: sum(value[0] for value in nums)}
+        scope = {'sum': lambda *nums: sum(nums)}
 
         result = interpreter.interpret_ast(tree, scope)
 
@@ -73,8 +73,21 @@ class InterpreterTestCase(unittest.TestCase):
                     ast.Int((2,)))))),))
 
         # Mock a native sum function
-        scope = {'sum': lambda *nums: sum(value[0] for value in nums)}
+        scope = {'sum': lambda *nums: sum(nums)}
 
         result = interpreter.interpret_ast(tree, scope)
         self.assertEqual(result, None)
         self.assertEqual(scope['x'], 5)
+
+    def test_sum_symbols(self):
+        tree = ast.RootAbstractSyntaxNode((ast.Apply((
+            ast.Symbol(('sum',)),
+            ast.Symbol(('x',)),
+            ast.Symbol(('y',)))),
+        ))
+
+        scope = {'x': 1, 'y': 2,
+                 'sum': lambda *nums: sum(nums)}
+
+        result = interpreter.interpret_ast(tree, scope)
+        self.assertEqual(result, 3)

@@ -87,6 +87,7 @@ def interpret_apply(tree, scope):
     if not isinstance(tree[0], ast.Symbol):
         raise Exception('Should only apply functions, not {}'.format(tree[0]))
 
-    return scope[tree[0][0]](*tree[1:])
+    # return scope[tree[0][0]](*tree[1:])
+    return scope[tree[0][0]](*[interpret_ast(node, scope) for node in tree[1:]])
 
 
