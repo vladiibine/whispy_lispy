@@ -4,11 +4,6 @@
 from __future__ import unicode_literals
 
 
-DEFINITION = 'def'
-QUOTE = "'"
-EVAL = "eval"
-
-
 class AbstractSyntaxNode(object):
     """An abstract syntax node"""
     def __init__(self, values, evaluable=True):
@@ -108,3 +103,9 @@ class Assign(AbstractSyntaxNode):
         if len(self.values) != 2:
             return '<Invalid Assign>'
         return '<Assign {} := {} >'.format(self.values[0], self.values[1])
+
+
+class First(AbstractSyntaxNode):
+    """Represents the 'car' operation (returns first object in a list)"""
+    def __repr__(self):
+        return '<CAR>'

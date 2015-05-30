@@ -7,6 +7,8 @@ Lexer should return tokens that are instances of classes found here
 from __future__ import unicode_literals
 import six
 
+from whispy_lispy import keywords
+
 class CSTError(Exception):
     pass
 
@@ -80,14 +82,14 @@ class ConcreteSyntaxNode(object):
         """Recognize the ' symbol"""
         return (
             len(self.values) == 1 and
-            self.values[0] == '\''
+            self.values[0] == keywords.OPERATOR_QUOTE
         )
 
     def is_quote_function(self):
         """Recognize the `quote` function"""
         return (
             self.is_symbol() and
-            self.values[0] == 'quote'
+            self.values[0] == keywords.BUILTIN_QUOTE
         )
 
     def is_int(self):

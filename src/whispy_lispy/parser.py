@@ -4,7 +4,7 @@ Will accept a tree of allowed symbols, and construct an abstract syntax tree
 """
 from __future__ import unicode_literals, absolute_import
 
-from whispy_lispy import ast, cst
+from whispy_lispy import ast, cst, keywords
 
 
 def get_ast2(cstree):
@@ -59,7 +59,6 @@ def make_quote_children_unevaluable(tree, met_quote=False):
     return tree.alike(tuple(new_values), not met_quote)
 
 
-
 def transform_quote_function_into_builtin(tree):
     """Converts Apply(Quote(), X, ...) into Quote(X, ...)
 
@@ -77,6 +76,7 @@ def transform_quote_function_into_builtin(tree):
         new_values.append(transform_quote_function_into_builtin(child))
 
     return tree.alike(tuple(new_values))
+
 
 def transform_assignment_symbol_to_builtin(tree):
     """Convert Apply(Assign('x', 'y')) into Assign('x', 'y')
@@ -168,7 +168,7 @@ def determine_operation_type(cstree):
         if cstree.is_float():
             return ast.Float
         if cstree.is_symbol():
-            if cstree.symbol_equals(ast.DEFINITION):
+            if cstree.symbol_equals(keywords.DEFINITION):
                 return ast.Assign
             return ast.Symbol
 
