@@ -158,3 +158,22 @@ class ParserOperationsTestCase(unittest.TestCase):
         self.assertIsInstance(result_ast.values[0], ast.Apply2)
         self.assertIsInstance(result_ast.values[0].values[0], ast.AbstractSyntaxNode)  # noqa
         self.assertIsInstance(result_ast.values[0].values[1], ast.Quote2)
+
+
+class ParserTransformationsTestCase(unittest.TestCase):
+    def test_simple_quote_operator_to_function(self):
+        result_ast = parser.transform_quote_operator_into_function(
+            an((ast.OperatorQuote(()), an('a'))))
+
+        self.assertIsInstance(result_ast.values[0], ast.Apply2)
+        self.assertIsInstance(result_ast.values[0].values[0], ast.Quote2)
+
+    def test_nested_quote_operator_to_function(self):
+        result_ast = parser.transform_quote_operator_into_function(
+            an((ast.OperatorQuote(()), an((an('a'), ast.OperatorQuote(()), an('b')))))
+        )
+        self.assertIsInstance(result_ast[0], ast.Apply2)
+        self.assertIsInstance(result_ast[0][0], ast.Quote2)
+
+        self.assertIsInstance(result_ast[0][0][0][1], ast.Apply2)
+        self.assertIsInstance(result_ast[0][0][0][1][0], ast.Quote2)

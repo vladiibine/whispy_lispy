@@ -278,6 +278,9 @@ class AbstractSyntaxNode(object):
             return False
         return self.values == other.values
 
+    def __getitem__(self, item):
+        return self.values[item]
+
     def __repr__(self):
         return '<aN {}>'.format(self.values)
 

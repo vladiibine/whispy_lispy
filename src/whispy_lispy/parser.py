@@ -52,22 +52,25 @@ def mutate_tree_structure(tree):
 
 def transform_quote_operator_into_function(tree):
     """Transform  (' a b ...) into  ((quote a) b ...) """
-    if not tree.is_leaf():
-        new_children = []
-        skip_next = False
-        for idx, child in enumerate(tree.values):
-            if skip_next:
-                skip_next = False
-                continue
-            # Might be the case that the quote is the last element
-            # Must throw some kind of error or something
-            if isinstance(child, ast.OperatorQuote):
-                skip_next = True
-                new_children.append(
-                    mutate_tree_structure(
-                        ast.Apply2((ast.Quote2((tree.values[idx + 1], )),))))
+    if tree.is_leaf():
+        return tree
 
-    return tree
+    new_children = []
+    skip_next = False
+    for idx, child in enumerate(tree.values):
+        if skip_next:
+            skip_next = False
+            continue
+        # Might be the case that the quote is the last element
+        # Must throw some kind of error or something
+        if isinstance(child, ast.OperatorQuote):
+            skip_next = True
+            new_children.append(
+                transform_quote_operator_into_function(
+                    ast.Apply2((ast.Quote2((tree.values[idx + 1], )),))))
+            continue
+        new_children.append(transform_quote_operator_into_function(child))
+    return tree.alike(tuple(new_children))
 
 
 def transform_one_to_one(cstree):
