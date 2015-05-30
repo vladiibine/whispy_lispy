@@ -11,6 +11,7 @@ DEFINITION = 'def'
 QUOTE = "'"
 EVAL = "eval"
 
+
 class Symbol(object):
     """Represents 'names' in a namespace... so functions or 'variables'
     """
@@ -216,7 +217,6 @@ class Eval(object):
         return result
 
 
-
 class Apply(object):
     def __init__(self, symbol, *args):
         if isinstance(symbol, six.string_types):
@@ -261,6 +261,7 @@ class Apply(object):
                 'Missing symbol name: "{}"'.format(self.symbol))
         return func(scope, self.args)
 
+
 class AbstractSyntaxNode(object):
     """An abstract syntax node"""
     __slots__ = ['values']
@@ -295,6 +296,7 @@ class AbstractSyntaxNode(object):
         """Create a new node, with the same type as the current one"""
         return self.__class__(values)
 
+
 class RootAbstractSyntaxNode(AbstractSyntaxNode):
     """The abstract node marking the root of the node hierarchy"""
     def __repr__(self):
@@ -308,12 +310,14 @@ class Apply2(AbstractSyntaxNode):
     def __repr__(self):
         return '<Apply {}>'.format(self.values)
 
+
 class Quote2(AbstractSyntaxNode):
     """Abstract quote"""
     __slots__ = ['values']
 
     def __repr__(self):
         return '<Quote {}>'.format(self.values)
+
 
 class OperatorQuote(AbstractSyntaxNode):
     """Represents the quote operator ' """
@@ -322,12 +326,14 @@ class OperatorQuote(AbstractSyntaxNode):
     def __repr__(self):
         return '<QuoteOP>'
 
+
 class Symbol2(AbstractSyntaxNode):
     """Represents a symbol (variable or function name)"""
     __slots__ = ['values']
 
     def __repr__(self):
         return '<Symb. {}>'.format(self.values[0])
+
 
 class Int(AbstractSyntaxNode):
     """Represents an integer value"""
@@ -336,12 +342,14 @@ class Int(AbstractSyntaxNode):
     def __repr__(self):
         return '<{}>'.format(self.values[0])
 
+
 class Float(AbstractSyntaxNode):
     """Represents a floating point value"""
     __slots__ = ['values']
 
     def __repr__(self):
         return '<{}>'.format(self.values[0])
+
 
 class Bool(AbstractSyntaxNode):
     """Represents a boolean value"""
