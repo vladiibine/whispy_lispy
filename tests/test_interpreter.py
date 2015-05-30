@@ -50,3 +50,31 @@ class InterpreterTestCase(unittest.TestCase):
         scope = {}
         interpreter.interpret_ast(tree, scope)
         self.assertEqual(scope['y'], 3)
+
+    def test_simple_sum_apply(self):
+        tree = ast.RootAbstractSyntaxNode((
+            ast.Apply((ast.Symbol(('sum',)), ast.Int((3,)), ast.Int((4,)))),
+        ))
+
+        # Mock a native sum function
+        scope = {'sum': lambda *nums: sum(value[0] for value in nums)}
+
+        result = interpreter.interpret_ast(tree, scope)
+
+        self.assertEqual(result, 7)
+
+    def test_assign_value_of_apply_sum(self):
+        tree = ast.RootAbstractSyntaxNode((
+            ast.Assign((
+                ast.Symbol(('x',)),
+                ast.Apply((
+                    ast.Symbol(('sum',)),
+                    ast.Int((3,)),
+                    ast.Int((2,)))))),))
+
+        # Mock a native sum function
+        scope = {'sum': lambda *nums: sum(value[0] for value in nums)}
+
+        result = interpreter.interpret_ast(tree, scope)
+        self.assertEqual(result, None)
+        self.assertEqual(scope['x'], 5)

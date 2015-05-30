@@ -75,5 +75,18 @@ def interpret_assign(tree, scope):
         scope[tree[0][0]] = tree[1][0]
     elif isinstance(tree[1], ast.Symbol):
         scope[tree[0][0]] = scope[tree[1][0]]
+    elif isinstance(tree[1], ast.Apply):
+        scope[tree[0][0]] = interpret_apply(tree[1], scope)
+    # Should be able to assign an evaluated value
+
+def interpret_apply(tree, scope):
+    """Interpret an apply operation"""
+    # We'll have operators at some point. We must either transform all of them
+    # to function calls, or change this check to also allow operators
+    # At some point we'll also have lambdas, so this surely has to change then
+    if not isinstance(tree[0], ast.Symbol):
+        raise Exception('Should only apply functions, not {}'.format(tree[0]))
+
+    return scope[tree[0][0]](*tree[1:])
 
 
