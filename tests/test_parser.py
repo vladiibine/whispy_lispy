@@ -177,3 +177,17 @@ class ParserTransformationsTestCase(unittest.TestCase):
 
         self.assertIsInstance(result_ast[0][0][0][1], ast.Apply2)
         self.assertIsInstance(result_ast[0][0][0][1][0], ast.Quote2)
+
+
+class ParserSymbolTestCase(unittest.TestCase):
+    def test_simple_symbol(self):
+        result_ast = parser.get_ast2(cn('a'))
+        self.assertIsInstance(result_ast, ast.Symbol2)
+
+    def test_nested_symbols(self):
+        result_ast = parser.get_ast2(cn((cn('a'), cn((cn('b'), cn('c'))))))
+
+        self.assertIsInstance(result_ast[0], ast.Symbol2)
+        self.assertIsInstance(result_ast[1][0], ast.Symbol2)
+        self.assertIsInstance(result_ast[1][1], ast.Symbol2)
+
