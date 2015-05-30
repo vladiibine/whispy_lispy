@@ -91,14 +91,15 @@ def transform_one_to_one(cstree):
     values = []
     if cstree.is_leaf():
         node_class = determine_operation_type(cstree)
-        return _commit_ast_node(cstree.values, node_class)
+        return node_class(tuple(cstree.values))
+
     for value in cstree.values:
         if value.is_leaf():
             node_class = determine_operation_type(value)
-            values.append(_commit_ast_node(value.values, node_class))
+            values.append(node_class(tuple(value.values)))
         else:
             values.append(transform_one_to_one(value))
-    return _commit_ast_node(values, determine_operation_type(cstree))
+    return determine_operation_type(cstree)(tuple(values))
 
 
 def determine_operation_type(cstree):
@@ -119,12 +120,7 @@ def determine_operation_type(cstree):
             return ast.OperatorQuote
 
     # generic node that doesn't mean anything
+    # When "everything" is implemented, reaching this section should raise
+    # an exception - everything should be classifiable into a more meaningful
+    # node type
     return ast.AbstractSyntaxNode
-
-
-def _commit_ast_node(values, node_cls):
-    """
-    :param values:
-    :return:
-    """
-    return node_cls(tuple(values))
