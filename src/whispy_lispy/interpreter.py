@@ -41,6 +41,12 @@ def interpret_ast(tree, scope=None):
     if tree.is_leaf():
         return interpret_leaf(tree, scope)
 
+    if isinstance(tree, ast.Apply):
+        return interpret_apply(tree, scope)
+
+    if isinstance(tree, ast.Assign):
+        return interpret_assign(tree, scope)
+
     for elem in tree.values:
         result = interpret_ast(elem, scope)
 
@@ -59,4 +65,15 @@ def interpret_leaf(tree, scope):
             return scope[tree[0]]
         elif isinstance(tree, ast.Literal):
             return tree[0]
+
+
+def interpret_assign(tree, scope):
+    """Interpret a global assignment operation"""
+    if not isinstance(tree[0], ast.Symbol):
+        raise Exception('Should only assign to symbols')
+    if isinstance(tree[1], ast.Literal):
+        scope[tree[0][0]] = tree[1][0]
+    elif isinstance(tree[1], ast.Symbol):
+        scope[tree[0][0]] = scope[tree[1][0]]
+
 

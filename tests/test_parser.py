@@ -96,9 +96,8 @@ class ParserOperationsTestCase(unittest.TestCase):
     def test_apply_quote_to_symbol(self):
         result_ast = parser.get_ast2(rcn(cn((cn('quote'), cn('a')))))
 
-        self.assertIsInstance(result_ast[0], ast.Apply)
-        self.assertIsInstance(result_ast[0][0], ast.Quote)
-        self.assertTrue(len(result_ast[0].values), 2)
+        self.assertIsInstance(result_ast[0], ast.Quote)
+        self.assertTrue(len(result_ast[0].values), 1)
 
     def test_apply_quote_and_symbol(self):
         result_ast = parser.get_ast2(rcn((cn((cn('a'), cn('quote'), cn('b'))))))  # noqa
@@ -107,17 +106,20 @@ class ParserOperationsTestCase(unittest.TestCase):
         self.assertIsInstance(result_ast[0][0], ast.AbstractSyntaxNode)  # noqa
         self.assertIsInstance(result_ast[0][1], ast.Quote)
 
+    def test_quote_children_are_not_evaluable(self):
+        self.fail('Not implemented')
+
 
 class ParserTransformationsTestCase(unittest.TestCase):
     def test_simple_quote_operator_to_function(self):
-        result_ast = parser.transform_quote_operator_into_builtin(
+        result_ast = parser.transform_quote_operator_into_function(
             an((ast.OperatorQuote(()), an('a'))))
 
         self.assertIsInstance(result_ast[0], ast.Apply)
         self.assertIsInstance(result_ast[0][0], ast.Quote)
 
     def test_nested_quote_operator_to_function(self):
-        result_ast = parser.transform_quote_operator_into_builtin(
+        result_ast = parser.transform_quote_operator_into_function(
             an((ast.OperatorQuote(()), an((an('a'), ast.OperatorQuote(()), an('b')))))
         )
         self.assertIsInstance(result_ast[0], ast.Apply)

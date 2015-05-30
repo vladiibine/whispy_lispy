@@ -25,14 +25,35 @@ def mutate_tree_structure(tree):
     :type tree: ast.AbstractSyntaxNode
     :rtype: ast.AbstractSyntaxNode
     """
-    result = transform_quote_operator_into_builtin(tree)
-    result = convert_assignment_symbol_to_builtin(result)
+    result = transform_quote_operator_into_function(tree)
+    result = transform_quote_function_into_builtin(result)
+    result = transform_assignment_symbol_to_builtin(result)
     # Idea - the last transformation should transform all the remaining ASNodes
     # (but not subclass instances) into "lists"
     return result
 
 
-def convert_assignment_symbol_to_builtin(tree):
+def transform_quote_function_into_builtin(tree):
+    """Converts Apply(Quote(), X, ...) into Quote(X, ...)
+
+    This step makes determining the children of a Quote much easier
+    """
+    if tree.is_leaf():
+        return tree
+
+    if isinstance(tree, ast.Apply):
+        if isinstance(tree[0], ast.Quote):
+            return transform_quote_function_into_builtin(
+                ast.Quote((tree.values[1:],))
+            )
+
+    new_values = []
+    for child in tree.values:
+        new_values.append(transform_quote_function_into_builtin(child))
+
+    return tree.alike(tuple(new_values))
+
+def transform_assignment_symbol_to_builtin(tree):
     """Convert Apply(Assign('x', 'y')) into Assign('x', 'y')
 
     ATM we assume the syntax is correct. Should probably do a check for syntax
@@ -46,16 +67,16 @@ def convert_assignment_symbol_to_builtin(tree):
 
     if isinstance(tree, ast.Apply):
         if isinstance(tree[0], ast.Assign):
-            return convert_assignment_symbol_to_builtin(ast.Assign(tree.values[1:]))  # noqa
+            return transform_assignment_symbol_to_builtin(ast.Assign(tree.values[1:]))  # noqa
 
     new_values = []
     for child in tree.values:
-        new_values.append(convert_assignment_symbol_to_builtin(child))
+        new_values.append(transform_assignment_symbol_to_builtin(child))
 
     return tree.alike(tuple(new_values))
 
 
-def transform_quote_operator_into_builtin(tree):
+def transform_quote_operator_into_function(tree):
     """Transform  (' a b ...) into  ((quote a) b ...) """
     if tree.is_leaf():
         return tree
@@ -71,10 +92,10 @@ def transform_quote_operator_into_builtin(tree):
         if isinstance(child, ast.OperatorQuote):
             skip_next = True
             new_children.append(
-                transform_quote_operator_into_builtin(
+                transform_quote_operator_into_function(
                     ast.Apply((ast.Quote((tree.values[idx + 1], )),))))
             continue
-        new_children.append(transform_quote_operator_into_builtin(child))
+        new_children.append(transform_quote_operator_into_function(child))
     return tree.alike(tuple(new_children))
 
 
