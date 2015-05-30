@@ -14,13 +14,12 @@ EVAL = "eval"
 
 class AbstractSyntaxNode(object):
     """An abstract syntax node"""
-    __slots__ = ['values']
-
-    def __init__(self, values):
+    def __init__(self, values, evaluable=True):
         """
         :type values: tuple
         """
         self.values = values
+        self.evaluable = evaluable
 
     def __eq__(self, other):
         if other is None:
@@ -42,6 +41,10 @@ class AbstractSyntaxNode(object):
         return all(
             not isinstance(elem, AbstractSyntaxNode) for elem in self.values)
 
+    def is_evaluable(self):
+        """Whether this should be 'instantly' evaluated or is quoted"""
+        return self.evaluable
+
     def alike(self, values):
         """Create a new node, with the same type as the current one"""
         return self.__class__(values)
@@ -55,56 +58,46 @@ class RootAbstractSyntaxNode(AbstractSyntaxNode):
 
 class Apply(AbstractSyntaxNode):
     """Abstract apply"""
-    __slots__ = ['values']
-
     def __repr__(self):
         return '<Apply {}>'.format(self.values)
 
 
 class Quote(AbstractSyntaxNode):
     """Abstract quote"""
-    __slots__ = ['values']
-
     def __repr__(self):
         return '<Quote {}>'.format(self.values)
 
 
 class OperatorQuote(AbstractSyntaxNode):
     """Represents the quote operator ' """
-    __slots__ = ['values']
-
     def __repr__(self):
         return '<QuoteOP>'
 
 
 class Symbol(AbstractSyntaxNode):
     """Represents a symbol (variable or function name)"""
-    __slots__ = ['values']
-
     def __repr__(self):
         return '<Symb: {}>'.format(self.values[0])
 
 
-class Int(AbstractSyntaxNode):
+class Literal(AbstractSyntaxNode):
+    """Superclass of all values"""
+
+
+class Int(Literal):
     """Represents an integer value"""
-    __slots__ = ['values']
-
     def __repr__(self):
         return '<{}>'.format(self.values[0])
 
 
-class Float(AbstractSyntaxNode):
+class Float(Literal):
     """Represents a floating point value"""
-    __slots__ = ['values']
-
     def __repr__(self):
         return '<{}>'.format(self.values[0])
 
 
-class Bool(AbstractSyntaxNode):
+class Bool(Literal):
     """Represents a boolean value"""
-    __slots__ = ['values']
-
     def __repr__(self):
         return '<{}>'.format(self.values[0])
 
@@ -114,8 +107,6 @@ class Assign(AbstractSyntaxNode):
 
     Will be evaluated in a certain scope
     """
-    __slots__ = ['values']
-
     def __repr__(self):
         if len(self.values) != 2:
             return '<Invalid Assign>'
