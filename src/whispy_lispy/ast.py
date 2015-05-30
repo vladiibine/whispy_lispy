@@ -45,9 +45,9 @@ class AbstractSyntaxNode(object):
         """Whether this should be 'instantly' evaluated or is quoted"""
         return self.evaluable
 
-    def alike(self, values):
+    def alike(self, values, evaluable=True):
         """Create a new node, with the same type as the current one"""
-        return self.__class__(values)
+        return self.__class__(values, evaluable)
 
 
 class RootAbstractSyntaxNode(AbstractSyntaxNode):

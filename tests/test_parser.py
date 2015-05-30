@@ -107,7 +107,37 @@ class ParserOperationsTestCase(unittest.TestCase):
         self.assertIsInstance(result_ast[0][1], ast.Quote)
 
     def test_quote_children_are_not_evaluable(self):
-        self.fail('Not implemented')
+        result_ast = parser.get_ast2(
+            rcn((
+                cn('a'),
+                cn((
+                    cn('list'),
+                    cn(1),
+                    cn((
+                        cn('quote'),
+                        cn('a'),
+                        cn('b'),
+                        cn((
+                            cn('sum'),
+                            cn(1),
+                            cn(2)
+                        )))),
+                    cn('c'))))))
+
+        self.assertTrue(result_ast.is_evaluable())
+        self.assertTrue(result_ast[0].is_evaluable())  # The root
+        self.assertTrue(result_ast[1].is_evaluable())  # The 1st apply
+        self.assertTrue(result_ast[1][0].is_evaluable())  # The list func
+        self.assertTrue(result_ast[1][1].is_evaluable())  # The literal 1
+        self.assertTrue(result_ast[1][2].is_evaluable())  # The quote itself
+        self.assertTrue(result_ast[1][3].is_evaluable())  # The symbol 'c'
+
+        self.assertFalse(result_ast[1][2][0].is_evaluable())  # the symbol 'a'
+        self.assertFalse(result_ast[1][2][1].is_evaluable())  # the symbol 'b'
+        self.assertFalse(result_ast[1][2][2].is_evaluable())  # the 2nd apply
+        self.assertFalse(result_ast[1][2][2][0].is_evaluable())  # the 'sum'
+        self.assertFalse(result_ast[1][2][2][1].is_evaluable())  # literal 1
+        self.assertFalse(result_ast[1][2][2][1].is_evaluable())  # literal 2
 
 
 class ParserTransformationsTestCase(unittest.TestCase):
@@ -120,7 +150,7 @@ class ParserTransformationsTestCase(unittest.TestCase):
 
     def test_nested_quote_operator_to_function(self):
         result_ast = parser.transform_quote_operator_into_function(
-            an((ast.OperatorQuote(()), an((an('a'), ast.OperatorQuote(()), an('b')))))
+            an((ast.OperatorQuote(()), an((an('a'), ast.OperatorQuote(()), an('b')))))  # noqa
         )
         self.assertIsInstance(result_ast[0], ast.Apply)
         self.assertIsInstance(result_ast[0][0], ast.Quote)

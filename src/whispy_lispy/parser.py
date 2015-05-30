@@ -28,9 +28,36 @@ def mutate_tree_structure(tree):
     result = transform_quote_operator_into_function(tree)
     result = transform_quote_function_into_builtin(result)
     result = transform_assignment_symbol_to_builtin(result)
+    result = make_quote_children_unevaluable(result)
     # Idea - the last transformation should transform all the remaining ASNodes
     # (but not subclass instances) into "lists"
     return result
+
+
+def make_quote_children_unevaluable(tree, met_quote=False):
+    """AST Nodes need to know if they're evaluable or not.
+
+    This function sets the property 'evaluable' to false to all the children
+    of a quote
+
+    :type tree: ast.AbstractSyntaxNode
+    :rtype: ast.AbstractSyntaxNode
+    """
+    if tree.is_leaf():
+        return tree.alike(tree.values, not met_quote)
+
+    new_values = []
+
+    for child in tree.values:
+        new_values.append(make_quote_children_unevaluable(
+            child.alike(
+                child.values,
+                not (met_quote or isinstance(tree, ast.Quote))),
+            met_quote or isinstance(tree, ast.Quote)
+        ))
+
+    return tree.alike(tuple(new_values), not met_quote)
+
 
 
 def transform_quote_function_into_builtin(tree):
@@ -43,9 +70,7 @@ def transform_quote_function_into_builtin(tree):
 
     if isinstance(tree, ast.Apply):
         if isinstance(tree[0], ast.Quote):
-            return transform_quote_function_into_builtin(
-                ast.Quote((tree.values[1:],))
-            )
+            return transform_quote_function_into_builtin(ast.Quote(tree.values[1:]))  # noqa
 
     new_values = []
     for child in tree.values:
