@@ -2,9 +2,6 @@
 """Abstract syntax tree stuff
 """
 from __future__ import unicode_literals
-import six
-
-from whispy_lispy import exceptions
 
 
 DEFINITION = 'def'
