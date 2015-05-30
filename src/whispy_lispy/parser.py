@@ -110,6 +110,12 @@ def determine_operation_type(cstree):
             return ast.Quote2
         if cstree.is_quote_literal():
             return ast.OperatorQuote
+        if cstree.is_bool():
+            return ast.Bool
+        if cstree.is_int():
+            return ast.Int
+        if cstree.is_float():
+            return ast.Float
         if cstree.is_symbol():
             return ast.Symbol2
 

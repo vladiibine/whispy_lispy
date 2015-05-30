@@ -328,3 +328,24 @@ class Symbol2(AbstractSyntaxNode):
 
     def __repr__(self):
         return '<Symb. {}>'.format(self.values[0])
+
+class Int(AbstractSyntaxNode):
+    """Represents an integer value"""
+    __slots__ = ['values']
+
+    def __repr__(self):
+        return '<{}>'.format(self.values[0])
+
+class Float(AbstractSyntaxNode):
+    """Represents a floating point value"""
+    __slots__ = ['values']
+
+    def __repr__(self):
+        return '<{}>'.format(self.values[0])
+
+class Bool(AbstractSyntaxNode):
+    """Represents a boolean value"""
+    __slots__ = ['values']
+
+    def __repr__(self):
+        return '<{}>'.format(self.values[0])

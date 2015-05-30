@@ -191,3 +191,27 @@ class ParserSymbolTestCase(unittest.TestCase):
         self.assertIsInstance(result_ast[1][0], ast.Symbol2)
         self.assertIsInstance(result_ast[1][1], ast.Symbol2)
 
+
+class ParserBaseAtomTypesTestCase(unittest.TestCase):
+    def test_parse_int_float_bool_simple(self):
+        result_ast = parser.get_ast2(cn((cn(1), cn(9.3), cn(True))))
+
+        self.assertIsInstance(result_ast[0], ast.Int)
+        self.assertIsInstance(result_ast[1], ast.Float)
+        self.assertIsInstance(result_ast[2], ast.Bool)
+
+    def test_mixed_order_multiple_int_float_and_bool(self):
+        result_ast = parser.get_ast2(
+            cn((cn(True), cn(9.3), cn(True), cn(1), cn(True), cn(False),
+                cn(8.3), cn(2), cn(4), cn(1.2)))
+        )
+        self.assertIsInstance(result_ast[0], ast.Bool)
+        self.assertIsInstance(result_ast[1], ast.Float)
+        self.assertIsInstance(result_ast[2], ast.Bool)
+        self.assertIsInstance(result_ast[3], ast.Int)
+        self.assertIsInstance(result_ast[4], ast.Bool)
+        self.assertIsInstance(result_ast[5], ast.Bool)
+        self.assertIsInstance(result_ast[6], ast.Float)
+        self.assertIsInstance(result_ast[7], ast.Int)
+        self.assertIsInstance(result_ast[8], ast.Int)
+        self.assertIsInstance(result_ast[9], ast.Float)

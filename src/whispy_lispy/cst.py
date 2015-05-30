@@ -90,6 +90,24 @@ class ConcreteSyntaxNode(object):
             self.values[0] == 'quote'
         )
 
+    def is_int(self):
+        return (
+            len(self.values) == 1 and
+            isinstance(self.values[0], int)
+        )
+
+    def is_float(self):
+        return (
+            len(self.values) == 1 and
+            isinstance(self.values[0], float)
+        )
+
+    def is_bool(self):
+        return (
+            len(self.values) == 1 and
+            isinstance(self.values[0], bool)
+        )
+
 class RootConcreteSyntaxnode(ConcreteSyntaxNode):
     def __repr__(self):
         return '<RcN {}>'.format(self.values)
