@@ -38,31 +38,19 @@ def get_ast2(cstree):
     result = transform_one_to_one(cstree)
     return mutate_tree_structure(result)
 
+
 def mutate_tree_structure(tree):
     """Apply transformations to the abstract syntax tree that alter its
     structure
 
-    I wonder if this is really necessary... I mean just replace the quote
-    with an Apply('quote', X), and we can keep the structure, and just mutate
-    one element "'" -> "quote"...we'll see
-
     :type tree: ast.AbstractSyntaxNode
     :rtype: ast.AbstractSyntaxNode
     """
-    # TODO - transform >>> ' a b ...<<< into >>> (quote a) b ... <<< - no hurry
-    # if not tree.is_leaf():
-    #     new_children = []
-    #     if isinstance(tree, ast.Quote2):
-    #         iterable_values = tree.values[1:]
-    #     else:
-    #         iterable_values = tree.values
-    #
-    #     for child in iterable_values:
-    #         new_children.append(mutate_tree_structure(child))
-    #
-    #     return tree.alike(tuple(new_children))
-    # if isinstance(tree, ast.Apply2):
-    #     if
+    result = transform_quote_operator_into_function(tree)
+    return result
+
+def transform_quote_operator_into_function(tree):
+    "Transform  >' a b ...< into  >(quote a) b ...< """
     if not tree.is_leaf():
         new_children = []
         skip_next = False
@@ -79,6 +67,7 @@ def mutate_tree_structure(tree):
                         ast.Apply2((ast.Quote2((tree.values[idx + 1], )),))))
 
     return tree
+
 
 
 def transform_one_to_one(cstree):
