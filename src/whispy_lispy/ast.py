@@ -332,7 +332,7 @@ class Symbol2(AbstractSyntaxNode):
     __slots__ = ['values']
 
     def __repr__(self):
-        return '<Symb. {}>'.format(self.values[0])
+        return '<Symb: {}>'.format(self.values[0])
 
 
 class Int(AbstractSyntaxNode):
@@ -357,3 +357,16 @@ class Bool(AbstractSyntaxNode):
 
     def __repr__(self):
         return '<{}>'.format(self.values[0])
+
+
+class Assign2(AbstractSyntaxNode):
+    """Represent the assignment of a value to a symbol
+
+    Will be evaluated in a certain scope
+    """
+    __slots__ = ['values']
+
+    def __repr__(self):
+        if len(self.values) != 2:
+            return '<Invalid Assign>'
+        return '<Assign {} := {} >'.format(self.values[0], self.values[1])

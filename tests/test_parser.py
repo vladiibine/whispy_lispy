@@ -162,14 +162,14 @@ class ParserOperationsTestCase(unittest.TestCase):
 
 class ParserTransformationsTestCase(unittest.TestCase):
     def test_simple_quote_operator_to_function(self):
-        result_ast = parser.transform_quote_operator_into_function(
+        result_ast = parser.transform_quote_operator_into_builtin(
             an((ast.OperatorQuote(()), an('a'))))
 
         self.assertIsInstance(result_ast.values[0], ast.Apply2)
         self.assertIsInstance(result_ast.values[0].values[0], ast.Quote2)
 
     def test_nested_quote_operator_to_function(self):
-        result_ast = parser.transform_quote_operator_into_function(
+        result_ast = parser.transform_quote_operator_into_builtin(
             an((ast.OperatorQuote(()), an((an('a'), ast.OperatorQuote(()), an('b')))))
         )
         self.assertIsInstance(result_ast[0], ast.Apply2)
@@ -215,3 +215,28 @@ class ParserBaseAtomTypesTestCase(unittest.TestCase):
         self.assertIsInstance(result_ast[7], ast.Int)
         self.assertIsInstance(result_ast[8], ast.Int)
         self.assertIsInstance(result_ast[9], ast.Float)
+
+
+class AssignmentTestCase(unittest.TestCase):
+    def test_simple_assignment(self):
+        # (def x 9)
+        result_ast = parser.get_ast2(cn((cn('def'), cn('x'), cn(9))))
+
+        self.assertEqual(len(result_ast.values), 2)
+        self.assertIsInstance(result_ast, ast.Assign2)
+        self.assertIsInstance(result_ast[0], ast.Symbol2)
+
+    def test_nested_assignments(self):
+        # (def x (list (def y 1) 2))
+        result_ast = parser.get_ast2(
+            cn((
+                cn('def'),
+                cn('x'),
+                cn((
+                    cn('list'),
+                    cn((
+                        cn('def'), cn('y'), cn(1))),
+                    cn(2))))))
+
+        self.assertIsInstance(result_ast, ast.Assign2)
+        self.assertIsInstance(result_ast[1][1], ast.Assign2)

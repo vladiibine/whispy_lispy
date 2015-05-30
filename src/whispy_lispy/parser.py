@@ -46,11 +46,35 @@ def mutate_tree_structure(tree):
     :type tree: ast.AbstractSyntaxNode
     :rtype: ast.AbstractSyntaxNode
     """
-    result = transform_quote_operator_into_function(tree)
+    result = transform_quote_operator_into_builtin(tree)
+    result = convert_assignment_symbol_to_builtin(result)
     return result
 
 
-def transform_quote_operator_into_function(tree):
+def convert_assignment_symbol_to_builtin(tree):
+    """Convert Apply(Assign('x', 'y')) into Assign('x', 'y')
+
+    ATM we assume the syntax is correct. Should probably do a check for syntax
+    errors at some point after conversion, or in this very function.
+
+    :param ast.AbstractSyntaxNode tree: the ast to transform
+    :rtype: ast.AbstractSyntaxNode
+    """
+    if tree.is_leaf():
+        return tree
+
+    if isinstance(tree, ast.Apply2):
+        if isinstance(tree[0], ast.Assign2):
+            return convert_assignment_symbol_to_builtin(ast.Assign2(tree.values[1:]))  # noqa
+
+    new_values = []
+    for child in tree.values:
+        new_values.append(convert_assignment_symbol_to_builtin(child))
+
+    return tree.alike(tuple(new_values))
+
+
+def transform_quote_operator_into_builtin(tree):
     """Transform  (' a b ...) into  ((quote a) b ...) """
     if tree.is_leaf():
         return tree
@@ -66,10 +90,10 @@ def transform_quote_operator_into_function(tree):
         if isinstance(child, ast.OperatorQuote):
             skip_next = True
             new_children.append(
-                transform_quote_operator_into_function(
+                transform_quote_operator_into_builtin(
                     ast.Apply2((ast.Quote2((tree.values[idx + 1], )),))))
             continue
-        new_children.append(transform_quote_operator_into_function(child))
+        new_children.append(transform_quote_operator_into_builtin(child))
     return tree.alike(tuple(new_children))
 
 
@@ -96,8 +120,8 @@ def transform_one_to_one(cstree):
 
 def determine_operation_type(cstree):
     """Determine the operation type that this node corresponds to
-    :param cstree:
-    :return:
+    :param cst.ConcreteSyntaxNode cstree: a concrete syntax tree
+    :rtype: type
     """
     if cstree.is_root():
         return ast.RootAbstractSyntaxNode
@@ -117,6 +141,8 @@ def determine_operation_type(cstree):
         if cstree.is_float():
             return ast.Float
         if cstree.is_symbol():
+            if cstree.symbol_equals('def'):
+                return ast.Assign2
             return ast.Symbol2
 
     # generic node that doesn't mean anything

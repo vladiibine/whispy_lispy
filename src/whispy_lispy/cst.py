@@ -108,6 +108,12 @@ class ConcreteSyntaxNode(object):
             isinstance(self.values[0], bool)
         )
 
+    def symbol_equals(self, param):
+        if not self.is_symbol():
+            raise CSTError('Node is not a symbol')
+        return self.values[0] == param
+
+
 class RootConcreteSyntaxnode(ConcreteSyntaxNode):
     def __repr__(self):
         return '<RcN {}>'.format(self.values)
