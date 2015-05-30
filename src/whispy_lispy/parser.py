@@ -7,27 +7,6 @@ from __future__ import unicode_literals, absolute_import
 from whispy_lispy import ast, cst
 
 
-def get_ast(tree):
-    """
-
-    :param tree: A Syntax tree(?) - anyway a possibly nested list produced
-        by the lexer
-    :return: an abstract syntax tree
-    """
-    abstract_syntax_tree = []
-    if not tree:
-        return abstract_syntax_tree
-
-    for elem in tree:
-        for operation in (ast.Assign, ast.Quote, ast.Eval, ast.Symbol, ast.Literal, ast.Apply):  # noqa
-            match = operation.matches(elem)
-            if match is not None:
-                abstract_syntax_tree.append(operation.from_match(match))
-                break
-
-    return abstract_syntax_tree
-
-
 def get_ast2(cstree):
     """Convert the concrete syntax tree into an abstract one
 
@@ -48,6 +27,8 @@ def mutate_tree_structure(tree):
     """
     result = transform_quote_operator_into_builtin(tree)
     result = convert_assignment_symbol_to_builtin(result)
+    # Idea - the last transformation should transform all the remaining ASNodes
+    # (but not subclass instances) into "lists"
     return result
 
 
@@ -63,9 +44,9 @@ def convert_assignment_symbol_to_builtin(tree):
     if tree.is_leaf():
         return tree
 
-    if isinstance(tree, ast.Apply2):
-        if isinstance(tree[0], ast.Assign2):
-            return convert_assignment_symbol_to_builtin(ast.Assign2(tree.values[1:]))  # noqa
+    if isinstance(tree, ast.Apply):
+        if isinstance(tree[0], ast.Assign):
+            return convert_assignment_symbol_to_builtin(ast.Assign(tree.values[1:]))  # noqa
 
     new_values = []
     for child in tree.values:
@@ -91,7 +72,7 @@ def transform_quote_operator_into_builtin(tree):
             skip_next = True
             new_children.append(
                 transform_quote_operator_into_builtin(
-                    ast.Apply2((ast.Quote2((tree.values[idx + 1], )),))))
+                    ast.Apply((ast.Quote((tree.values[idx + 1], )),))))
             continue
         new_children.append(transform_quote_operator_into_builtin(child))
     return tree.alike(tuple(new_children))
@@ -128,10 +109,10 @@ def determine_operation_type(cstree):
 
     if not cstree.is_leaf():
         if cstree.values[0].is_symbol():
-            return ast.Apply2
+            return ast.Apply
     else:
         if cstree.is_quote_function():
-            return ast.Quote2
+            return ast.Quote
         if cstree.is_quote_literal():
             return ast.OperatorQuote
         if cstree.is_bool():
@@ -141,9 +122,9 @@ def determine_operation_type(cstree):
         if cstree.is_float():
             return ast.Float
         if cstree.is_symbol():
-            if cstree.symbol_equals('def'):
-                return ast.Assign2
-            return ast.Symbol2
+            if cstree.symbol_equals(ast.DEFINITION):
+                return ast.Assign
+            return ast.Symbol
 
     # generic node that doesn't mean anything
     # When "everything" is implemented, reaching this section should raise

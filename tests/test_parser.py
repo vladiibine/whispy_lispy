@@ -5,58 +5,6 @@ import unittest
 from whispy_lispy import parser, ast, cst
 
 
-class ParserTests(unittest.TestCase):
-    def test_parser_parses_empty_tree(self):
-        self.assertEqual(parser.get_ast([]), [])
-
-    def test_parser_parses_assignment(self):
-        self.assertEqual(
-            parser.get_ast([['def', 'x', 1]]), [ast.Assign('x', 1)]
-        )
-
-    def test_parser_parses_quotation(self):
-        self.assertEqual(
-            parser.get_ast([["'", 'a']]),
-            [ast.Quote([ast.Symbol('a')])])
-
-    def test_parses_explicit_evaluation(self):
-        self.assertEqual(
-            parser.get_ast([['eval', "'", ['a', 'b']]]),
-            [ast.Eval(ast.Quote([ast.Apply(ast.Symbol('a'), ast.Symbol('b'))]))])  # noqa
-
-    def test_parse_implicit_apply(self):
-        self.assertEqual(
-            parser.get_ast([['asdf', 3, 4]]),
-            [ast.Apply(ast.Symbol('asdf'), ast.Literal(3), ast.Literal(4))])
-
-    def test_parse_assigning_from_assigned_value(self):
-        self.assertEqual(
-            parser.get_ast([['def', 'x', 9], ['def', 'y', 'x']]),
-            [ast.Assign('x', 9), ast.Assign('y', 'x')]
-        )
-
-    def test_quote_sum(self):
-        result = parser.get_ast([["'", ['sum', 1, 2]]])
-        self.assertEqual(
-            result,
-            [ast.Quote(
-                [ast.Apply(ast.Symbol('sum'),
-                           ast.Literal(1),
-                           ast.Literal(2))])
-             ]
-        )
-
-    def test_parse_eval_quote_sum(self):
-        self.assertEqual(
-            parser.get_ast([['eval', "'", ['sum', 1, 2]]]),
-            [ast.Eval(
-                ast.Quote(
-                    [ast.Apply(
-                        ast.Symbol('sum'),
-                        ast.Literal(1),
-                        ast.Literal(2))]))]
-        )
-
 def cn(val):
     """Return a ConcreteSyntaxNode """
     return create_any_node(val, cst.ConcreteSyntaxNode)
@@ -136,28 +84,28 @@ class ParserOperationsTestCase(unittest.TestCase):
     def test_simple_apply(self):
         result_ast = parser.get_ast2(rcn(cn((cn('a'), cn(2)))))
 
-        self.assertIsInstance(result_ast.values[0], ast.Apply2)
+        self.assertIsInstance(result_ast[0], ast.Apply)
 
     def test_nested_apply(self):
         result_ast = parser.get_ast2(
             rcn(cn((cn('a'), cn('b'), cn((cn('c'), cn(1)))))))
 
-        self.assertIsInstance(result_ast.values[0], ast.Apply2)
-        self.assertIsInstance(result_ast.values[0].values[2], ast.Apply2)
+        self.assertIsInstance(result_ast[0], ast.Apply)
+        self.assertIsInstance(result_ast[0][2], ast.Apply)
 
     def test_apply_quote_to_symbol(self):
         result_ast = parser.get_ast2(rcn(cn((cn('quote'), cn('a')))))
 
-        self.assertIsInstance(result_ast.values[0], ast.Apply2)
-        self.assertIsInstance(result_ast.values[0].values[0], ast.Quote2)
-        self.assertTrue(len(result_ast.values[0].values), 2)
+        self.assertIsInstance(result_ast[0], ast.Apply)
+        self.assertIsInstance(result_ast[0][0], ast.Quote)
+        self.assertTrue(len(result_ast[0].values), 2)
 
     def test_apply_quote_and_symbol(self):
         result_ast = parser.get_ast2(rcn((cn((cn('a'), cn('quote'), cn('b'))))))  # noqa
 
-        self.assertIsInstance(result_ast.values[0], ast.Apply2)
-        self.assertIsInstance(result_ast.values[0].values[0], ast.AbstractSyntaxNode)  # noqa
-        self.assertIsInstance(result_ast.values[0].values[1], ast.Quote2)
+        self.assertIsInstance(result_ast[0], ast.Apply)
+        self.assertIsInstance(result_ast[0][0], ast.AbstractSyntaxNode)  # noqa
+        self.assertIsInstance(result_ast[0][1], ast.Quote)
 
 
 class ParserTransformationsTestCase(unittest.TestCase):
@@ -165,31 +113,31 @@ class ParserTransformationsTestCase(unittest.TestCase):
         result_ast = parser.transform_quote_operator_into_builtin(
             an((ast.OperatorQuote(()), an('a'))))
 
-        self.assertIsInstance(result_ast.values[0], ast.Apply2)
-        self.assertIsInstance(result_ast.values[0].values[0], ast.Quote2)
+        self.assertIsInstance(result_ast[0], ast.Apply)
+        self.assertIsInstance(result_ast[0][0], ast.Quote)
 
     def test_nested_quote_operator_to_function(self):
         result_ast = parser.transform_quote_operator_into_builtin(
             an((ast.OperatorQuote(()), an((an('a'), ast.OperatorQuote(()), an('b')))))
         )
-        self.assertIsInstance(result_ast[0], ast.Apply2)
-        self.assertIsInstance(result_ast[0][0], ast.Quote2)
+        self.assertIsInstance(result_ast[0], ast.Apply)
+        self.assertIsInstance(result_ast[0][0], ast.Quote)
 
-        self.assertIsInstance(result_ast[0][0][0][1], ast.Apply2)
-        self.assertIsInstance(result_ast[0][0][0][1][0], ast.Quote2)
+        self.assertIsInstance(result_ast[0][0][0][1], ast.Apply)
+        self.assertIsInstance(result_ast[0][0][0][1][0], ast.Quote)
 
 
 class ParserSymbolTestCase(unittest.TestCase):
     def test_simple_symbol(self):
         result_ast = parser.get_ast2(cn('a'))
-        self.assertIsInstance(result_ast, ast.Symbol2)
+        self.assertIsInstance(result_ast, ast.Symbol)
 
     def test_nested_symbols(self):
         result_ast = parser.get_ast2(cn((cn('a'), cn((cn('b'), cn('c'))))))
 
-        self.assertIsInstance(result_ast[0], ast.Symbol2)
-        self.assertIsInstance(result_ast[1][0], ast.Symbol2)
-        self.assertIsInstance(result_ast[1][1], ast.Symbol2)
+        self.assertIsInstance(result_ast[0], ast.Symbol)
+        self.assertIsInstance(result_ast[1][0], ast.Symbol)
+        self.assertIsInstance(result_ast[1][1], ast.Symbol)
 
 
 class ParserBaseAtomTypesTestCase(unittest.TestCase):
@@ -223,8 +171,8 @@ class AssignmentTestCase(unittest.TestCase):
         result_ast = parser.get_ast2(cn((cn('def'), cn('x'), cn(9))))
 
         self.assertEqual(len(result_ast.values), 2)
-        self.assertIsInstance(result_ast, ast.Assign2)
-        self.assertIsInstance(result_ast[0], ast.Symbol2)
+        self.assertIsInstance(result_ast, ast.Assign)
+        self.assertIsInstance(result_ast[0], ast.Symbol)
 
     def test_nested_assignments(self):
         # (def x (list (def y 1) 2))
@@ -238,5 +186,5 @@ class AssignmentTestCase(unittest.TestCase):
                         cn('def'), cn('y'), cn(1))),
                     cn(2))))))
 
-        self.assertIsInstance(result_ast, ast.Assign2)
-        self.assertIsInstance(result_ast[1][1], ast.Assign2)
+        self.assertIsInstance(result_ast, ast.Assign)
+        self.assertIsInstance(result_ast[1][1], ast.Assign)
