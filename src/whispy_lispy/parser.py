@@ -157,10 +157,6 @@ def determine_operation_type(cstree):
         if cstree.values[0].is_symbol():
             return ast.Apply
     else:
-        if cstree.is_quote_function():
-            return ast.Quote
-        if cstree.is_quote_literal():
-            return ast.OperatorQuote
         if cstree.is_bool():
             return ast.Bool
         if cstree.is_int():
@@ -168,12 +164,12 @@ def determine_operation_type(cstree):
         if cstree.is_float():
             return ast.Float
         if cstree.is_symbol():
+            if cstree.symbol_equals(keywords.OPERATOR_QUOTE):
+                return ast.OperatorQuote
+            if cstree.symbol_equals(keywords.BUILTIN_QUOTE_FUNC):
+                return ast.Quote
             if cstree.symbol_equals(keywords.DEFINITION):
                 return ast.Assign
             return ast.Symbol
 
-    # generic node that doesn't mean anything
-    # When "everything" is implemented, reaching this section should raise
-    # an exception - everything should be classifiable into a more meaningful
-    # node type
     return ast.AbstractSyntaxNode

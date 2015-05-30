@@ -108,4 +108,4 @@ class Assign(AbstractSyntaxNode):
 class First(AbstractSyntaxNode):
     """Represents the 'car' operation (returns first object in a list)"""
     def __repr__(self):
-        return '<CAR>'
+        return '<CAR {}>'.format(self.values[0])
