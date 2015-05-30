@@ -110,6 +110,8 @@ def determine_operation_type(cstree):
             return ast.Quote2
         if cstree.is_quote_literal():
             return ast.OperatorQuote
+        if cstree.is_symbol():
+            return ast.Symbol2
 
     # generic node that doesn't mean anything
     # When "everything" is implemented, reaching this section should raise

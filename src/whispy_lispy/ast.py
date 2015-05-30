@@ -321,3 +321,10 @@ class OperatorQuote(AbstractSyntaxNode):
 
     def __repr__(self):
         return '<QuoteOP>'
+
+class Symbol2(AbstractSyntaxNode):
+    """Represents a symbol (variable or function name)"""
+    __slots__ = ['values']
+
+    def __repr__(self):
+        return '<Symb. {}>'.format(self.values[0])
