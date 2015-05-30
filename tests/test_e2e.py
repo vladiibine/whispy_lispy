@@ -7,7 +7,7 @@ import unittest
 
 from whispy_lispy import lexer, parser, interpreter
 
-SAMPLE_SUM_NUMBERS = """\
+SAMPLE_SUM_NUMBERS_AND_RETURN_VALUE = """\
 (def a 3)
 (def b 4)
 (def x (sum a b))
@@ -19,7 +19,7 @@ class IntegrationTestCase(unittest.TestCase):
     def test_sum_3_numbers(self):
         scope = {'sum': lambda *nums: sum(nums)}
         cst = lexer.get_concrete_syntax_tree(
-            lexer.get_flat_token_list(SAMPLE_SUM_NUMBERS)
+            lexer.get_flat_token_list(SAMPLE_SUM_NUMBERS_AND_RETURN_VALUE)
         )
         ast = parser.get_ast2(cst)
         result = interpreter.interpret_ast(ast, scope)

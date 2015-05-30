@@ -1,2 +1,0 @@
-class LispyUnboundSymbolError(Exception):
-    pass
