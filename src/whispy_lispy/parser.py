@@ -49,8 +49,9 @@ def mutate_tree_structure(tree):
     result = transform_quote_operator_into_function(tree)
     return result
 
+
 def transform_quote_operator_into_function(tree):
-    "Transform  >' a b ...< into  >(quote a) b ...< """
+    """Transform  (' a b ...) into  ((quote a) b ...) """
     if not tree.is_leaf():
         new_children = []
         skip_next = False
@@ -67,7 +68,6 @@ def transform_quote_operator_into_function(tree):
                         ast.Apply2((ast.Quote2((tree.values[idx + 1], )),))))
 
     return tree
-
 
 
 def transform_one_to_one(cstree):
