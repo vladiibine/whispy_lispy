@@ -4,8 +4,11 @@
 from __future__ import absolute_import, unicode_literals
 
 import unittest
+import mock
+import StringIO
 
-from whispy_lispy import lexer, parser, interpreter
+from whispy_lispy import interpreter, scopes, skip_steps
+
 
 SAMPLE_SUM_NUMBERS_AND_RETURN_VALUE = """\
 (def a 3)
@@ -14,15 +17,30 @@ SAMPLE_SUM_NUMBERS_AND_RETURN_VALUE = """\
 8
 """
 
+SAMPLE_SUBTRACT_AND_SUM = """\
+(def user_input (simple_input))
+(def x (sum 1 (sub 9 (sum 1 user_input))))
+(print x)
+(sum x 14)
+"""
+
 
 class IntegrationTestCase(unittest.TestCase):
-    def test_sum_3_numbers(self):
+    def test_sum_3_numbers_in_dummy_scope(self):
         scope = {'sum': lambda *nums: sum(nums)}
-        cst = lexer.get_concrete_syntax_tree(
-            lexer.get_flat_token_list(SAMPLE_SUM_NUMBERS_AND_RETURN_VALUE)
-        )
-        ast = parser.get_ast2(cst)
+        ast = skip_steps.get_ast_from_text(SAMPLE_SUM_NUMBERS_AND_RETURN_VALUE)
         result = interpreter.interpret_ast(ast, scope)
 
         self.assertEqual(scope['x'], 7)
         self.assertEqual(result, 8)
+
+    @mock.patch('sys.stdin', StringIO.StringIO('2'))
+    @mock.patch('sys.stdout')
+    def test_user_input_sum_subtract_return_and_print_in_normal_scope(
+            self, stdout_mock):
+        result = skip_steps.interpret_text(SAMPLE_SUBTRACT_AND_SUM)
+
+        # Got the user input, calculated stuff, returned a value
+        self.assertEqual(result, 21)
+        # Printed the result to standard output
+        self.assertEqual(stdout_mock.method_calls[1], mock.call.write('7'))
