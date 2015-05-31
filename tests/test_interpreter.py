@@ -5,6 +5,7 @@ import unittest
 
 from whispy_lispy import interpreter, ast
 
+
 class InterpreterTestCase(unittest.TestCase):
     def test_return_the_only_provided_value(self):
         tree = ast.RootAbstractSyntaxNode((ast.Int((3,)),))

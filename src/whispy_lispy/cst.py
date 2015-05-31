@@ -95,6 +95,14 @@ class ConcreteSyntaxNode(object):
             isinstance(self.values[0], bool)
         )
 
+    def is_string(self):
+        return (
+            len(self.values) == 1 and
+            isinstance(self.values[0], str) and
+            self.values[0][0] == '"' and
+            self.values[0][-1] == '"'
+        )
+
     def symbol_equals(self, param):
         if not self.is_symbol():
             raise CSTError('Node is not a symbol')

@@ -61,6 +61,8 @@ def make_quote_children_unevaluable(tree, met_quote=False):
     This function sets the property 'evaluable' to false to all the children
     of a quote
 
+    :param bool met_quote: whether a quote was met higher up in the evaluation
+        hierarchy (so this element is a child of a quote)
     :type tree: ast.AbstractSyntaxNode
     :rtype: ast.AbstractSyntaxNode
     """
@@ -178,6 +180,8 @@ def determine_operation_type(cstree):
         if cstree.values[0].is_symbol():
             return ast.Apply
     else:
+        if cstree.is_string():
+            return ast.String
         if cstree.is_bool():
             return ast.Bool
         if cstree.is_int():

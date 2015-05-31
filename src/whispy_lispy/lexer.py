@@ -21,6 +21,8 @@ SOURCE_PATTERNS = (
     (make_token(lambda x: True if x == '#t' else False), re.compile('#[ft]')),
     (make_token(float), re.compile('[0-9]+\.[0-9]+')),
     (make_token(int), re.compile('[0-9]+')),
+    # Matches escaped strings that can span multiple lines
+    (make_token(str), re.compile(r'\".*?(?<!\\)\"', re.DOTALL)),
     # Match symbols and quotes
     (make_token(str), re.compile('[a-zA-Z_]+|\'')),
     (lambda _: cst.IncrementNesting, re.compile('\(')),

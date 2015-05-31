@@ -94,6 +94,12 @@ class Bool(Literal):
         return '<{}>'.format(self.values[0])
 
 
+class String(Literal):
+    """Represents a character string"""
+    def __repr__(self):
+        return '<{}>'.format(self.values[0])
+
+
 class Assign(AbstractSyntaxNode):
     """Represent the assignment of a value to a symbol
 

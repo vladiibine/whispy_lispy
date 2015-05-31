@@ -142,13 +142,23 @@ class FlatLexerTestCase(BaseLexerTestCase):
 
     def test_parses_known_types(self):
         self.assertSequenceEqual(
-            lexer.get_flat_token_list('a 2 4.4 b #t #f'), [
+            lexer.get_flat_token_list(r'a 2 4.4 b #t #f "as\"df"'), [
                 t('a'),
                 t(2),
                 t(4.4),
                 t('b'),
                 t(True),
-                t(False)])
+                t(False),
+                t(r'"as\"df"')])
+
+    def test_parses_multiline_strings(self):
+        tokens = lexer.get_flat_token_list(r'''
+        "a
+        \"b
+        c"
+        ''')
+        expected_value = '"a\n        \\"b\n        c"'
+        self.assertEqual(tokens, [t(expected_value)])
 
     def test_parses_nested_known_types(self):
         self.assertSequenceEqual(
