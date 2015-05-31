@@ -3,7 +3,7 @@ from __future__ import absolute_import, unicode_literals, print_function
 
 import six
 
-if six.Py3:
+if six.PY3:
     raw_input = input
 
 from whispy_lispy import skip_steps, scopes

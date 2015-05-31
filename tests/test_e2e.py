@@ -49,4 +49,4 @@ class IntegrationTestCase(unittest.TestCase):
         # Got the user input, calculated stuff, returned a value
         self.assertEqual(result, 21)
         # Printed the result to standard output
-        self.assertEqual(stdout_mock.method_calls[1], mock.call.write('7'))
+        stdout_mock.assert_has_calls([mock.call.write('7')])

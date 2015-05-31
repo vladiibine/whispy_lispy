@@ -3,6 +3,11 @@
 from __future__ import absolute_import, unicode_literals, print_function
 
 import sys
+import six
+
+if six.PY3:
+    raw_input = input
+    from functools import reduce
 
 from operator import sub
 
