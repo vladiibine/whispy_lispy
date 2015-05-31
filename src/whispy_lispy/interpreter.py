@@ -24,14 +24,21 @@ def interpret_ast(tree, scope=None):
 
     if isinstance(tree, ast.Apply):
         return interpret_apply(tree, scope)
-
-    if isinstance(tree, ast.Assign):
+    elif isinstance(tree, ast.Assign):
         return interpret_assign(tree, scope)
+    elif isinstance(tree, ast.Car):
+        return interpret_car(tree, scope)
 
     for elem in tree.values:
         result = interpret_ast(elem, scope)
 
     return result
+
+
+def interpret_car(tree, scope):
+    """Return the first element in the list"""
+    if tree.is_evaluable():
+        return interpret_ast(tree[0][0])
 
 
 def interpret_leaf(tree, scope):

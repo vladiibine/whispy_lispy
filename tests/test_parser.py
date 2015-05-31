@@ -225,7 +225,7 @@ class CarTestCase(unittest.TestCase):
     def test_simple_car_function(self):
         result_ast = parser.get_ast2(cn((cn('car'), cn((cn('list'), cn(1))))))
 
-        self.assertIsInstance(result_ast, ast.First)
+        self.assertIsInstance(result_ast, ast.Car)
         self.assertIsInstance(result_ast[0], ast.Apply)
         self.assertEqual(len(result_ast[0].values), 2)
 
@@ -233,5 +233,5 @@ class CarTestCase(unittest.TestCase):
         result_ast = parser.get_ast2(
             cn((cn('car'), cn((cn('list'), cn((cn('car'), cn('x'))))))))
 
-        self.assertIsInstance(result_ast, ast.First)
-        self.assertIsInstance(result_ast[0][1], ast.First)
+        self.assertIsInstance(result_ast, ast.Car)
+        self.assertIsInstance(result_ast[0][1], ast.Car)

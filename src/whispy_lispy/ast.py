@@ -105,7 +105,19 @@ class Assign(AbstractSyntaxNode):
         return '<Assign {} := {} >'.format(self.values[0], self.values[1])
 
 
-class First(AbstractSyntaxNode):
+class Car(AbstractSyntaxNode):
     """Represents the 'car' operation (returns first object in a list)"""
+    def __init__(self, values, evaluable=True):
+        """Throw exception if more or less than 1 argument is received
+
+        :type values: tuple
+        """
+        if len(values) != 1:
+            raise SyntaxError(
+                "Can only pass 1 argument to 'car'. {} given"
+                .format(len(values))
+            )
+        super(Car, self).__init__(values, evaluable)
+
     def __repr__(self):
         return '<CAR {}>'.format(self.values[0])

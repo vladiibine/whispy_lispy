@@ -45,8 +45,8 @@ def transform_car_function_to_builtin(tree):
         return tree
 
     if isinstance(tree, ast.Apply):
-        if isinstance(tree[0], ast.First):
-            return transform_car_function_to_builtin(ast.First(tree.values[1:]))  # noqa
+        if isinstance(tree[0], ast.Car):
+            return transform_car_function_to_builtin(ast.Car(tree.values[1:]))  # noqa
 
     new_values = []
     for child in tree.values:
@@ -190,7 +190,7 @@ def determine_operation_type(cstree):
             if cstree.symbol_equals(keywords.BUILTIN_QUOTE_FUNC):
                 return ast.Quote
             if cstree.symbol_equals(keywords.BUILTIN_CAR_FUNC):
-                return ast.First
+                return ast.Car
             if cstree.symbol_equals(keywords.DEFINITION):
                 return ast.Assign
             return ast.Symbol

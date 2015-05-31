@@ -91,3 +91,22 @@ class InterpreterTestCase(unittest.TestCase):
 
         result = interpreter.interpret_ast(tree, scope)
         self.assertEqual(result, 3)
+
+    def test_simple_car_function_usage(self):
+        tree = ast.RootAbstractSyntaxNode((
+            ast.Car((ast.AbstractSyntaxNode((ast.Int((1,)), ast.Int((2,)))),)),
+        ))
+        result = interpreter.interpret_ast(tree)
+
+        self.assertEqual(result, 1)
+
+    def test_nested_car_function(self):
+        tree = ast.RootAbstractSyntaxNode((
+            ast.Car((
+                ast.AbstractSyntaxNode((
+                    ast.Car((
+                        ast.AbstractSyntaxNode((ast.Int((2,)), ast.Int((3,)))),
+                    )),
+                    ast.Int((4,)))),)),))
+
+        self.assertEqual(interpreter.interpret_ast(tree, {}), 2)
