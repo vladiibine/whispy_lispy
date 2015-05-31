@@ -2,7 +2,8 @@
 """Abstract syntax tree stuff
 """
 from __future__ import unicode_literals
-from whispy_lispy import syntax
+from whispy_lispy import exceptions
+
 
 class AbstractSyntaxNode(object):
     """An abstract syntax node"""
@@ -121,7 +122,7 @@ class Car(AbstractSyntaxNode):
         if not isinstance(values, tuple):
             raise ASTError('Invalid initialization. Values must be a tuple')
         if len(values) != 1:
-            raise syntax.LispySyntaxError(
+            raise whispy_lispy.exceptions.LispySyntaxError(
                 "Can only pass 1 argument to 'car'. {} given"
                 .format(len(values))
             )
@@ -140,5 +141,6 @@ class Car(AbstractSyntaxNode):
         return '<CAR {}>'.format(self.values[0])
 
 
-class ASTError(Exception):
+class ASTError(exceptions.BaseWhispyLispyError):
+    """The AST is malformed - most likely user's fault"""
     pass

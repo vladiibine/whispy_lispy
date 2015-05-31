@@ -6,7 +6,7 @@ import six
 if six.PY3:
     raw_input = input
 
-from whispy_lispy import skip_steps, scopes
+from whispy_lispy import skip_steps, scopes, exceptions
 
 PS1 = '(WL)$'
 PS2 = '.....'
@@ -19,8 +19,11 @@ def repl():
         try:
             print(PS1, end=' ')
             text = get_user_input()
-            result = skip_steps.interpret_text(text, scope)
-            print(PS3, result, end='\n\n')
+            try:
+                result = skip_steps.interpret_text(text, scope)
+                print(PS3, result, end='\n\n')
+            except exceptions.BaseWhispyLispyError as err:
+                print(err, end='\n\n')
         except KeyboardInterrupt:
             break
 

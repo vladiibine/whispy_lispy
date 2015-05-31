@@ -4,7 +4,7 @@ import re
 import six
 from collections import deque
 
-from whispy_lispy.syntax import LispySyntaxError
+from whispy_lispy.exceptions import WhispyLispySyntaxError
 from whispy_lispy import cst
 
 if six.PY2:
@@ -64,11 +64,11 @@ def get_concrete_syntax_tree(token_list):
             try:
                 q[-1].append(cst.ConcreteSyntaxNode(tuple(wrap_up)))
             except IndexError:
-                raise LispySyntaxError('Too many closing parentheses')
+                raise WhispyLispySyntaxError('Too many closing parentheses')
             continue
         q[-1].append(cst.ConcreteSyntaxNode((token.value,)))
 
     if len(q) > 1:
-        raise LispySyntaxError('Too many opening parentheses')
+        raise WhispyLispySyntaxError('Too many opening parentheses')
 
     return cst.RootConcreteSyntaxnode(tuple(q[-1]))

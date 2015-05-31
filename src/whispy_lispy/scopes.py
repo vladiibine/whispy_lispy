@@ -4,12 +4,13 @@ from __future__ import absolute_import, unicode_literals, print_function
 
 import sys
 import six
+from operator import sub
+
+from whispy_lispy import exceptions
 
 if six.PY3:
     raw_input = input
     from functools import reduce
-
-from operator import sub
 
 
 class OmniPresentScope(dict):
@@ -63,6 +64,7 @@ class OmniPresentScope(dict):
 
         def quit(*args):
             """Just quits and avoids funny values"""
+            print('Thank you! Come again!')
             if args:
                 if isinstance(args[0], int):
                     sys.exit(int(args[0]))
@@ -81,6 +83,11 @@ class Scope(dict):
         self.omni = OmniPresentScope()
 
     def __getitem__(self, item):
-        if item in self.keys():
-            return super(Scope, self).__getitem__(item)
-        return self.omni[item]
+        try:
+            if item in self.keys():
+                return super(Scope, self).__getitem__(item)
+            return self.omni[item]
+        except KeyError:
+            raise exceptions.UnboundSymbol(
+                'Symbol "{}" can\'t be found in scope'.format(item)
+            )

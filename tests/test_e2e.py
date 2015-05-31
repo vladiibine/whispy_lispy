@@ -13,7 +13,7 @@ else:
     from unittest import mock
     import io as StringIO
 
-from whispy_lispy import interpreter, scopes, skip_steps
+from whispy_lispy import interpreter, skip_steps
 
 
 SAMPLE_SUM_NUMBERS_AND_RETURN_VALUE = """\
