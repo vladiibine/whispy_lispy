@@ -50,10 +50,10 @@ def interpret_leaf(tree, scope):
     :return:
     """
     if tree.is_evaluable():
-        if isinstance(tree, ast.Symbol):
-            return scope[tree[0]]
-        elif isinstance(tree, ast.Literal):
+        if isinstance(tree, ast.Literal):
             return tree[0]
+        elif isinstance(tree, ast.Symbol):
+            return scope[tree[0]]
 
 
 def interpret_assign(tree, scope):

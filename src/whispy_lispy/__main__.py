@@ -1,10 +1,12 @@
+# coding -*- utf-8 -*-
+from __future__ import unicode_literals
 import sys
 # Why does this file exist, and why __main__?
 # For more info, read:
 # - https://www.python.org/dev/peps/pep-0338/
 # - https://docs.python.org/2/using/cmdline.html#cmdoption-m
 # - https://docs.python.org/3/using/cmdline.html#cmdoption-m
-from whispy_lispy import skip_steps
+from whispy_lispy import skip_steps, repl
 
 
 def main(argv=()):
@@ -17,7 +19,10 @@ def main(argv=()):
 
     Does stuff.
     """
-    skip_steps.interpret_text(argv[1])
+    if argv[1] == '-r':
+        repl.repl()
+    else:
+        skip_steps.interpret_text(argv[1])
     return 0
 
 if __name__ == "__main__":

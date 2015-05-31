@@ -98,7 +98,7 @@ class ConcreteSyntaxNode(object):
     def is_string(self):
         return (
             len(self.values) == 1 and
-            isinstance(self.values[0], str) and
+            isinstance(self.values[0], six.string_types) and
             self.values[0][0] == '"' and
             self.values[0][-1] == '"'
         )

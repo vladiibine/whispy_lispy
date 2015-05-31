@@ -2,6 +2,8 @@
 """Defines the scope objects"""
 from __future__ import absolute_import, unicode_literals, print_function
 
+import sys
+
 from operator import sub
 
 
@@ -13,6 +15,7 @@ class OmniPresentScope(dict):
     sub -> subtraction (any number of numbers)
     simple_input -> returns one of the base values: string, bool, int, float
     print -> prints to standard output
+    quit -> quits the session (
     """
     def __init__(self):
         # The sum function sums numbers
@@ -52,6 +55,18 @@ class OmniPresentScope(dict):
         self['simple_input'] = get_input
 
         self['print'] = print
+
+        def quit(*args):
+            """Just quits and avoids funny values"""
+            if args:
+                if isinstance(args[0], int):
+                    sys.exit(int(args[0]))
+                else:
+                    print(args[0])
+                    sys.exit(1)
+            sys.exit()
+
+        self['quit'] = quit
 
 
 class Scope(dict):

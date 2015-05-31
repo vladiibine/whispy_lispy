@@ -4,8 +4,14 @@
 from __future__ import absolute_import, unicode_literals
 
 import unittest
-import mock
-import StringIO
+import six
+
+if six.PY2:
+    import StringIO
+    import mock
+else:
+    from unittest import mock
+    import io as StringIO
 
 from whispy_lispy import interpreter, scopes, skip_steps
 

@@ -51,19 +51,49 @@ whispy_lispy
 
 Toy LISP implementation - because everyone does it!
 
-* Free software: BSD license
+* Free software: MIT license
 
-Installation
-============
 
-::
+Disclaimer
+==========
+This document will get deprecated fast. I'm working on features, and that most likely means I'll forget to update the docs.
 
-    pip install whispy_lispy
+Features
+========
++ Can evaluate strings from the command line::
 
-Documentation
-=============
+    python -m whispy_lispy '(print 3)'
 
-https://whispy_lispy.readthedocs.org/
++ Can run an interactive REPL interpreter::
+
+    python -m whispy_lispy -r
+
++ The interpreter knows these builtin functions:
+def, quote, sum, sub, quit
+
++ The interpreter evaluates literals and function calls, and displays the result
+Functions
+---------
+
++ **def** defines a value in the current (global) scope::
+
+    (WL)$ (def x 9)
+
++ **quote** should be the lisp quote, but it's buggy atm.
+
++ **sum** sums its arguments::
+
+    (WL)$ (sum 1 2 3 4 5)
+
++ **sub** subtracts from the first argument, all of the rest::
+
+    (WL)$ (sub 5 1 2)
+
++ **quit** quits the interpreter (optionally, provide an int as an exit code)::
+
+    (WL)$ (quit)
+    (WL)$ (quit 127)
+
 
 Development
 ===========

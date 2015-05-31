@@ -18,8 +18,10 @@ def get_ast_from_text(text):
     ))
 
 
-def interpret_text(text):
+def interpret_text(text, scope=None):
     """Run all the steps from parsing the text to interpreting it
     :param str|unicode text: the source text
     """
-    return interpreter.interpret_ast(get_ast_from_text(text), scopes.Scope())
+    if scope is None:
+        scope = scopes.Scope()
+    return interpreter.interpret_ast(get_ast_from_text(text), scope)

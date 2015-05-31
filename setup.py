@@ -59,7 +59,8 @@ setup(
     ],
     install_requires=[
         # eg: 'aspectlib==1.1.1', 'six>=1.7',
-        'six'
+        'six>=1.9,<2.0',
+        'mock>1.0'
     ],
     extras_require={
         # eg: 'rst': ['docutils>=0.11'],
