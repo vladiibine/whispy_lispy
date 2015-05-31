@@ -110,3 +110,18 @@ class InterpreterTestCase(unittest.TestCase):
                     ast.Int((4,)))),)),))
 
         self.assertEqual(interpreter.interpret_ast(tree, {}), 2)
+
+    def test_nested_car_evaluating_sum(self):
+        tree = ast.RootAbstractSyntaxNode((
+            ast.Car((
+                ast.AbstractSyntaxNode((
+                    ast.Car((
+                        ast.AbstractSyntaxNode((
+                            ast.Apply((
+                                ast.Symbol(('sum',)),
+                                ast.Int((2,)),
+                                ast.Int((3,))
+                            )),)),)),)),)),))
+        scope = {'sum': lambda *nums: sum(nums)}
+
+        self.assertEqual(interpreter.interpret_ast(tree, scope), 5)

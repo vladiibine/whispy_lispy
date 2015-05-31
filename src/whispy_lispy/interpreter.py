@@ -38,7 +38,8 @@ def interpret_ast(tree, scope=None):
 def interpret_car(tree, scope):
     """Return the first element in the list"""
     if tree.is_evaluable():
-        return interpret_ast(tree[0][0])
+        result = interpret_ast(tree[0][0], scope)
+        return result
 
 
 def interpret_leaf(tree, scope):

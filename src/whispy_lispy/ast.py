@@ -2,7 +2,7 @@
 """Abstract syntax tree stuff
 """
 from __future__ import unicode_literals
-
+from whispy_lispy import syntax
 
 class AbstractSyntaxNode(object):
     """An abstract syntax node"""
@@ -112,12 +112,27 @@ class Car(AbstractSyntaxNode):
 
         :type values: tuple
         """
+        if not isinstance(values, tuple):
+            raise ASTError('Invalid initialization. Values must be a tuple')
         if len(values) != 1:
-            raise SyntaxError(
+            raise syntax.LispySyntaxError(
                 "Can only pass 1 argument to 'car'. {} given"
                 .format(len(values))
             )
+        # This can't be used in the constructor, because during the 1:1
+        # translation, this will be broken. Must validate this however, so
+        # let's make a method 'check_consistency' or smth, that can be checked
+        # after the node is considered "committed"
+        # if values[0].is_leaf():
+        #     raise syntax.LispySyntaxError(
+        #         "Can't apply 'car' to a simple atom. Need a list, but got {}"
+        #         .format(values[0])
+        #     )
         super(Car, self).__init__(values, evaluable)
 
     def __repr__(self):
         return '<CAR {}>'.format(self.values[0])
+
+
+class ASTError(Exception):
+    pass
