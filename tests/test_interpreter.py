@@ -126,3 +126,13 @@ class MockedScopeInterpreterTestCase(unittest.TestCase):
         scope = {'sum': lambda *nums: sum(nums)}
 
         self.assertEqual(interpreter.interpret_ast(tree, scope), 5)
+
+    def test_semantically_invalid_but_syntactically_ok_parentheses(self):
+        tree = ast.RootAbstractSyntaxNode((
+            ast.AbstractSyntaxNode((
+                ast.AbstractSyntaxNode((
+                    ast.AbstractSyntaxNode((
+                        ast.AbstractSyntaxNode((
+                            ast.Int((9,)),)),)),)),)),))
+        result = interpreter.interpret_ast(tree, {})
+        pass

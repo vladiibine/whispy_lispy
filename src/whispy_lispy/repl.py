@@ -14,6 +14,7 @@ PS3 = '(WL):'
 
 
 def repl():
+    """Main REPL loop"""
     scope = scopes.Scope()
     while True:
         try:
@@ -25,13 +26,36 @@ def repl():
             except exceptions.BaseWhispyLispyError as err:
                 print(err, end='\n\n')
         except KeyboardInterrupt:
-            break
+            continue
+
+        except EOFError:
+            gracefully_exit()
+
+
+def gracefully_exit():
+    """Handle forced quit"""
+    try:
+        confirmation = None
+        while confirmation not in ['y', 'n']:
+            confirmation = raw_input('Really quit? (y/n)').lower()
+        if confirmation == 'y':
+            print()
+            skip_steps.interpret_text('(quit)')
+        else:
+            return
+    except EOFError:
+        print()
+        skip_steps.interpret_text('(quit)')
 
 
 def get_user_input(parens_count=0, inside_string=False):
     """Get text from the user, to evaluate with the whispy_lispy interpreter
 
     If strings or braces are left open, will prompt for more text
+
+    :param int parens_count: how many open parentheses(with no corresponding
+        match) we've met so far
+    :param bool inside_string: whether we're currently in a string literal
     :rtype: str | unicode
     """
     # symbols that would continue the input on the next line
