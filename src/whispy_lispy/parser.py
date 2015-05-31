@@ -28,10 +28,31 @@ def mutate_tree_structure(tree):
     result = transform_quote_operator_into_function(tree)
     result = transform_quote_function_into_builtin(result)
     result = transform_assignment_symbol_to_builtin(result)
+    result = transform_car_function_to_builtin(result)
     result = make_quote_children_unevaluable(result)
     # Idea - the last transformation should transform all the remaining ASNodes
     # (but not subclass instances) into "lists"
     return result
+
+
+def transform_car_function_to_builtin(tree):
+    """Transform Apply(Car(), ...) to Car(...)
+
+    :type tree: ast.AbstractSyntaxNode
+    :rtype: ast.AbstractSyntaxNode
+    """
+    if tree.is_leaf():
+        return tree
+
+    if isinstance(tree, ast.Apply):
+        if isinstance(tree[0], ast.First):
+            return transform_car_function_to_builtin(ast.First(tree.values[1:]))  # noqa
+
+    new_values = []
+    for child in tree.values:
+        new_values.append(transform_car_function_to_builtin(child))
+
+    return tree.alike(tuple(new_values))
 
 
 def make_quote_children_unevaluable(tree, met_quote=False):
@@ -168,6 +189,8 @@ def determine_operation_type(cstree):
                 return ast.OperatorQuote
             if cstree.symbol_equals(keywords.BUILTIN_QUOTE_FUNC):
                 return ast.Quote
+            if cstree.symbol_equals(keywords.BUILTIN_CAR_FUNC):
+                return ast.First
             if cstree.symbol_equals(keywords.DEFINITION):
                 return ast.Assign
             return ast.Symbol

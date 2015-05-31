@@ -220,3 +220,18 @@ class AssignmentTestCase(unittest.TestCase):
 
         self.assertIsInstance(result_ast, ast.Assign)
         self.assertIsInstance(result_ast[1][1], ast.Assign)
+
+class CarTestCase(unittest.TestCase):
+    def test_simple_car_function(self):
+        result_ast = parser.get_ast2(cn((cn('car'), cn((cn('list'), cn(1))))))
+
+        self.assertIsInstance(result_ast, ast.First)
+        self.assertIsInstance(result_ast[0], ast.Apply)
+        self.assertEqual(len(result_ast[0].values), 2)
+
+    def test_nested_car_function_calls(self):
+        result_ast = parser.get_ast2(
+            cn((cn('car'), cn((cn('list'), cn((cn('car'), cn('x'))))))))
+
+        self.assertIsInstance(result_ast, ast.First)
+        self.assertIsInstance(result_ast[0][1], ast.First)
