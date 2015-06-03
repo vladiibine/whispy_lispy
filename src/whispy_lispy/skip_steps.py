@@ -13,7 +13,7 @@ def get_ast_from_text(text):
 
     :param str|unicode text: a text to be parsed into an Abstract syntax tree
     """
-    return parser.get_ast2(lexer.get_concrete_syntax_tree(
+    return parser.get_ast(lexer.get_concrete_syntax_tree(
         lexer.get_flat_token_list(text)
     ))
 

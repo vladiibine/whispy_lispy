@@ -1,5 +1,8 @@
 # -*- coding utf-8 -*-
 """
+DEPRECATED - will remove this module
+
+
 Will accept a tree of allowed symbols, and construct an abstract syntax tree
 """
 from __future__ import unicode_literals, absolute_import
@@ -7,7 +10,7 @@ from __future__ import unicode_literals, absolute_import
 from whispy_lispy import ast, cst, keywords
 
 
-def get_ast2(cstree):
+def get_ast(cstree):
     """Convert the concrete syntax tree into an abstract one
 
     :type cstree: cst.ConcreteSyntaxNode
@@ -124,7 +127,7 @@ def transform_assignment_symbol_to_builtin(tree):
     return tree.alike(tuple(new_values))
 
 
-def transform_quote_operator_into_function(tree):
+def transform_quote_operator_into_function(tree, container_cls=ast.Apply):
     """Transform  (' a b ...) into  ((quote a) b ...) """
     if tree.is_leaf():
         return tree
@@ -141,31 +144,13 @@ def transform_quote_operator_into_function(tree):
             skip_next = True
             new_children.append(
                 transform_quote_operator_into_function(
-                    ast.Apply((ast.Quote((tree.values[idx + 1], )),))))
+                    container_cls((ast.Quote((tree.values[idx + 1],)),)),
+                    container_cls=container_cls),
+            )
             continue
-        new_children.append(transform_quote_operator_into_function(child))
+        new_children.append(transform_quote_operator_into_function(
+            child, container_cls=container_cls))
     return tree.alike(tuple(new_children))
-
-
-def transform_one_to_one(cstree):
-    """Transform a concrete syntax tree into an abstract one, preserving the
-    tree structure
-
-    :type cstree: cst.ConcreteSyntaxNode
-    :rtype: ast.AbstractSyntaxNode
-    """
-    values = []
-    if cstree.is_leaf():
-        node_class = determine_operation_type(cstree)
-        return node_class(tuple(cstree.values))
-
-    for value in cstree.values:
-        if value.is_leaf():
-            node_class = determine_operation_type(value)
-            values.append(node_class(tuple(value.values)))
-        else:
-            values.append(transform_one_to_one(value))
-    return determine_operation_type(cstree)(tuple(values))
 
 
 def determine_operation_type(cstree):
@@ -200,3 +185,26 @@ def determine_operation_type(cstree):
             return ast.Symbol
 
     return ast.AbstractSyntaxNode
+
+
+def transform_one_to_one(cstree,
+                         operation_determiner=determine_operation_type):
+    """Transform a concrete syntax tree into an abstract one, preserving the
+    tree structure
+
+    :type cstree: cst.ConcreteSyntaxNode
+    :param operation_determiner: a function returning the class of the new node
+    :rtype: ast.AbstractSyntaxNode
+    """
+    values = []
+    if cstree.is_leaf():
+        node_class = operation_determiner(cstree)
+        return node_class(tuple(cstree.values))
+
+    for value in cstree.values:
+        if value.is_leaf():
+            node_class = operation_determiner(value)
+            values.append(node_class(tuple(value.values)))
+        else:
+            values.append(transform_one_to_one(value, operation_determiner))
+    return operation_determiner(cstree)(tuple(values))

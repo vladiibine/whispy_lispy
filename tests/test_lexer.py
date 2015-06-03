@@ -177,3 +177,11 @@ class ConcreteSyntaxTreeTestCase(unittest.TestCase):
             lexer.get_concrete_syntax_tree,
             [d, t(0), i]
         )
+
+    def test_produces_lists_with_literals_on_first_position(self):
+        self.assertEqual(
+            lexer.get_concrete_syntax_tree([i, t(1), d]),
+            cst.RootConcreteSyntaxnode((
+                cst.ConcreteSyntaxNode((
+                    cst.ConcreteSyntaxNode((1,)),)),)))
+

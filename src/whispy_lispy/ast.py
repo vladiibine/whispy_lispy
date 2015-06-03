@@ -144,3 +144,9 @@ class Car(AbstractSyntaxNode):
 class ASTError(exceptions.BaseWhispyLispyError):
     """The AST is malformed - most likely user's fault"""
     pass
+
+
+class List(AbstractSyntaxNode):
+    """The abstract list"""
+    def __repr__(self):
+        return '<List :{}>'.format(self.values)

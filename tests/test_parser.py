@@ -48,32 +48,32 @@ class ParserOutputStructureTestCase(unittest.TestCase):
 
     def test_parses_empty_root_node(self):
         self.assertEqual(
-            parser.get_ast2(rcn(())), ran(()))
+            parser.get_ast(rcn(())), ran(()))
 
     def test_root_csnode_is_not_nonroot_asnode(self):
-        self.assertNotEqual(parser.get_ast2(rcn(())), an(()))
+        self.assertNotEqual(parser.get_ast(rcn(())), an(()))
 
     def test_nonroot_csnode_is_not_root_asnode(self):
-        self.assertNotEqual(parser.get_ast2(cn(())), ran(()))
+        self.assertNotEqual(parser.get_ast(cn(())), ran(()))
 
     def test_parses_empty_non_root_node(self):
         self.assertNodeStructureEqual(
-            parser.get_ast2(cn(())), an(()))
+            parser.get_ast(cn(())), an(()))
 
     def test_parses_non_empty_non_root(self):
-        self.assertNodeStructureEqual(parser.get_ast2(cn(2)), an(2))
+        self.assertNodeStructureEqual(parser.get_ast(cn(2)), an(2))
 
     def test_parses_single_element(self):
         self.assertNodeStructureEqual(
-            parser.get_ast2(cn(cn(1))), an(an(1)))
+            parser.get_ast(cn(cn(1))), an(an(1)))
 
     def test_parse_simple_nested_structure(self):
         self.assertNodeStructureEqual(
-            parser.get_ast2(cn((cn('a'), cn(2)))),
+            parser.get_ast(cn((cn('a'), cn(2)))),
             an((an('a'), an(2))))
 
     def test_parse_more_nested_structure(self):
-        actual = parser.get_ast2(
+        actual = parser.get_ast(
             rcn((cn(1), cn((cn(2), cn((cn(3), cn(4), cn(5))))), cn(6))))
         expected = ran((an(1), an((an(2), an((an(3), an(4), an(5))))), an(6)))
 
@@ -82,32 +82,32 @@ class ParserOutputStructureTestCase(unittest.TestCase):
 
 class ParserOperationsTestCase(unittest.TestCase):
     def test_simple_apply(self):
-        result_ast = parser.get_ast2(rcn(cn((cn('a'), cn(2)))))
+        result_ast = parser.get_ast(rcn(cn((cn('a'), cn(2)))))
 
         self.assertIsInstance(result_ast[0], ast.Apply)
 
     def test_nested_apply(self):
-        result_ast = parser.get_ast2(
+        result_ast = parser.get_ast(
             rcn(cn((cn('a'), cn('b'), cn((cn('c'), cn(1)))))))
 
         self.assertIsInstance(result_ast[0], ast.Apply)
         self.assertIsInstance(result_ast[0][2], ast.Apply)
 
     def test_apply_quote_to_symbol(self):
-        result_ast = parser.get_ast2(rcn(cn((cn('quote'), cn('a')))))
+        result_ast = parser.get_ast(rcn(cn((cn('quote'), cn('a')))))
 
         self.assertIsInstance(result_ast[0], ast.Quote)
         self.assertTrue(len(result_ast[0].values), 1)
 
     def test_apply_quote_and_symbol(self):
-        result_ast = parser.get_ast2(rcn((cn((cn('a'), cn('quote'), cn('b'))))))  # noqa
+        result_ast = parser.get_ast(rcn((cn((cn('a'), cn('quote'), cn('b'))))))  # noqa
 
         self.assertIsInstance(result_ast[0], ast.Apply)
         self.assertIsInstance(result_ast[0][0], ast.AbstractSyntaxNode)  # noqa
         self.assertIsInstance(result_ast[0][1], ast.Quote)
 
     def test_quote_children_are_not_evaluable(self):
-        result_ast = parser.get_ast2(
+        result_ast = parser.get_ast(
             rcn((
                 cn('a'),
                 cn((
@@ -161,11 +161,11 @@ class ParserTransformationsTestCase(unittest.TestCase):
 
 class ParserSymbolTestCase(unittest.TestCase):
     def test_simple_symbol(self):
-        result_ast = parser.get_ast2(cn('a'))
+        result_ast = parser.get_ast(cn('a'))
         self.assertIsInstance(result_ast, ast.Symbol)
 
     def test_nested_symbols(self):
-        result_ast = parser.get_ast2(cn((cn('a'), cn((cn('b'), cn('c'))))))
+        result_ast = parser.get_ast(cn((cn('a'), cn((cn('b'), cn('c'))))))
 
         self.assertIsInstance(result_ast[0], ast.Symbol)
         self.assertIsInstance(result_ast[1][0], ast.Symbol)
@@ -174,14 +174,14 @@ class ParserSymbolTestCase(unittest.TestCase):
 
 class ParserBaseAtomTypesTestCase(unittest.TestCase):
     def test_parse_int_float_bool_simple(self):
-        result_ast = parser.get_ast2(cn((cn(1), cn(9.3), cn(True))))
+        result_ast = parser.get_ast(cn((cn(1), cn(9.3), cn(True))))
 
         self.assertIsInstance(result_ast[0], ast.Int)
         self.assertIsInstance(result_ast[1], ast.Float)
         self.assertIsInstance(result_ast[2], ast.Bool)
 
     def test_mixed_order_multiple_int_float_and_bool(self):
-        result_ast = parser.get_ast2(
+        result_ast = parser.get_ast(
             cn((cn(True), cn(9.3), cn(True), cn(1), cn(True), cn(False),
                 cn(8.3), cn(2), cn(4), cn(1.2)))
         )
@@ -200,7 +200,7 @@ class ParserBaseAtomTypesTestCase(unittest.TestCase):
 class AssignmentTestCase(unittest.TestCase):
     def test_simple_assignment(self):
         # (def x 9)
-        result_ast = parser.get_ast2(cn((cn('def'), cn('x'), cn(9))))
+        result_ast = parser.get_ast(cn((cn('def'), cn('x'), cn(9))))
 
         self.assertEqual(len(result_ast.values), 2)
         self.assertIsInstance(result_ast, ast.Assign)
@@ -208,7 +208,7 @@ class AssignmentTestCase(unittest.TestCase):
 
     def test_nested_assignments(self):
         # (def x (list (def y 1) 2))
-        result_ast = parser.get_ast2(
+        result_ast = parser.get_ast(
             cn((
                 cn('def'),
                 cn('x'),
@@ -223,14 +223,14 @@ class AssignmentTestCase(unittest.TestCase):
 
 class CarTestCase(unittest.TestCase):
     def test_simple_car_function(self):
-        result_ast = parser.get_ast2(cn((cn('car'), cn((cn('list'), cn(1))))))
+        result_ast = parser.get_ast(cn((cn('car'), cn((cn('list'), cn(1))))))
 
         self.assertIsInstance(result_ast, ast.Car)
         self.assertIsInstance(result_ast[0], ast.Apply)
         self.assertEqual(len(result_ast[0].values), 2)
 
     def test_nested_car_function_calls(self):
-        result_ast = parser.get_ast2(
+        result_ast = parser.get_ast(
             cn((cn('car'), cn((cn('list'), cn((cn('car'), cn('x'))))))))
 
         self.assertIsInstance(result_ast, ast.Car)
