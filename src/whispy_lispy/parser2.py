@@ -10,7 +10,7 @@ because the top level list is special
 """
 
 from __future__ import unicode_literals, absolute_import
-from whispy_lispy import parser, ast, keywords
+from whispy_lispy import parser, ast, keywords, types
 
 
 def determine_operation_type(cstree):
@@ -72,5 +72,41 @@ def get_ast_from_cst(cstree):
     :rtype: ast.AbstractSyntaxNode
     """
     result = parser.transform_one_to_one(cstree, determine_operation_type)
+
+    # Here, all the operators should be transformed to function calls
     result = transform_quote_operator_into_function(result)
     return result
+
+
+AST_TO_SIMPLE_INTERNAL_TYPES_MAP = {
+    ast.Int: types.Int,
+    ast.Float: types.Float,
+    ast.String: types.String,
+    ast.Bool: types.Bool,
+    ast.Symbol: types.Symbol
+}
+
+AST_NESTED_TYPES_TO_INTERNAL_TYPES_MAP = {
+    ast.List: types.List,
+    ast.RootAbstractSyntaxNode: tuple
+}
+
+
+def get_native_types_from_ast(astree):
+    """Return the abstract syntax tree translated to the internal types
+
+    :param ast.AbstractSyntaxNode astree: an AST
+    :rtype: tuple[types.Type] | types.Type
+    """
+    new_values = []
+
+    new_simple_type = AST_TO_SIMPLE_INTERNAL_TYPES_MAP.get(type(astree))
+    if new_simple_type is not None:
+        return new_simple_type(astree.values)
+
+    new_nested_type = AST_NESTED_TYPES_TO_INTERNAL_TYPES_MAP.get(type(astree))
+    if new_nested_type:
+        for child in astree.values:
+            new_values.append(get_native_types_from_ast(child))
+        return new_nested_type(tuple(new_values))
+
