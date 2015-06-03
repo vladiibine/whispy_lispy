@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 
 import unittest
 
-from whispy_lispy import parser2, cst, ast
+from whispy_lispy import parser2, cst, ast, keywords
 
 i = cst.IncrementNesting
 d = cst.DecrementNesting
@@ -30,7 +30,7 @@ class Parser2TestCase(unittest.TestCase):
         self.assertEqual(
             result,
             ast.RootAbstractSyntaxNode((
-                ast.List((ast.Symbol(('quote',)),
+                ast.List((ast.Symbol((keywords.BUILTIN_QUOTE_FUNC,)),
                           ast.Symbol(('a',)))),)))
 
     def test_transform_2_non_nested_quote_operators_into_function_calls(self):
@@ -44,9 +44,13 @@ class Parser2TestCase(unittest.TestCase):
         self.assertEqual(
             result,
             ast.RootAbstractSyntaxNode((
-                ast.List((ast.Symbol(('quote',)), ast.Symbol(('a',)))),
+                ast.List((
+                    ast.Symbol((keywords.BUILTIN_QUOTE_FUNC,)),
+                    ast.Symbol(('a',)))),
                 ast.Int((1,)),
-                ast.List((ast.Symbol(('quote',)), ast.Symbol(('b',)))),
+                ast.List((
+                    ast.Symbol((keywords.BUILTIN_QUOTE_FUNC,)),
+                    ast.Symbol(('b',)))),
             )))
 
     def transform_3_nested_quote_operators_into_function_calls(self):
@@ -58,11 +62,11 @@ class Parser2TestCase(unittest.TestCase):
             result,
             ast.RootAbstractSyntaxNode((
                 ast.List((
-                    ast.Symbol(('quote',)),
+                    ast.Symbol((keywords.BUILTIN_QUOTE_FUNC,)),
                     ast.List((
-                        ast.Symbol(('quote',)),
+                        ast.Symbol((keywords.BUILTIN_QUOTE_FUNC,)),
                         ast.List((
-                            ast.Symbol(('quote',)),
+                            ast.Symbol((keywords.BUILTIN_QUOTE_FUNC,)),
                             ast.Symbol(('a',)))),)))),)))
 
     def test_parser_produces_lists_with_literals_on_first_position(self):
