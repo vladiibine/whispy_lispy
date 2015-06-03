@@ -122,7 +122,7 @@ class Car(AbstractSyntaxNode):
         if not isinstance(values, tuple):
             raise ASTError('Invalid initialization. Values must be a tuple')
         if len(values) != 1:
-            raise whispy_lispy.exceptions.LispySyntaxError(
+            raise exceptions.WhispyLispySyntaxError(
                 "Can only pass 1 argument to 'car'. {} given"
                 .format(len(values))
             )
