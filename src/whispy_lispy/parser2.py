@@ -13,6 +13,18 @@ from __future__ import unicode_literals, absolute_import
 from whispy_lispy import parser, ast, keywords, types
 
 
+def literal_creator(internal_type):
+    """Generic ast.Literal creator.
+
+    :param internal_type: an whispy_lispy.types object
+    :return:
+    """
+    def wrapper(values):
+        return ast.Literal(tuple([internal_type(values)]))
+    return wrapper
+
+
+
 def determine_operation_type(cstree):
     """Determine the type of the new node
     """
@@ -23,13 +35,13 @@ def determine_operation_type(cstree):
         return ast.List
     else:
         if cstree.is_string():
-            return ast.String
+            return literal_creator(types.String)
         if cstree.is_bool():
-            return ast.Bool
+            return literal_creator(types.Bool)
         if cstree.is_int():
-            return ast.Int
+            return literal_creator(types.Int)
         if cstree.is_float():
-            return ast.Float
+            return literal_creator(types.Float)
         if cstree.is_symbol():
             if cstree.symbol_equals(keywords.OPERATOR_QUOTE):
                 return ast.OperatorQuote
@@ -109,4 +121,3 @@ def get_native_types_from_ast(astree):
         for child in astree.values:
             new_values.append(get_native_types_from_ast(child))
         return new_nested_type(tuple(new_values))
-
