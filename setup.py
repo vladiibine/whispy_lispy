@@ -24,7 +24,7 @@ def read(*names, **kwargs):
 
 setup(
     name='whispy_lispy',
-    version='0.1.0',
+    version='0.1.1',
     license='BSD',
     description='Toy LISP implementation - because everyone does it!',
     long_description='%s\n%s' % (read('README.rst'), re.sub(':[a-z]+:`~?(.*?)`', r'``\1``', read('CHANGELOG.rst'))),
@@ -38,7 +38,7 @@ setup(
     zip_safe=False,
     classifiers=[
         # complete classifier list: http://pypi.python.org/pypi?%3Aaction=list_classifiers
-        'Development Status :: 5 - Production/Stable',
+        'Development Status :: 2 - Pre-Alpha',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: BSD License',
         'Operating System :: Unix',
@@ -53,6 +53,9 @@ setup(
         'Programming Language :: Python :: Implementation :: CPython',
         'Programming Language :: Python :: Implementation :: PyPy',
         'Topic :: Utilities',
+        'Topic :: Software Development :: Interpreters',
+        'Programming Language :: Lisp',
+        'Programming Language :: Scheme'
     ],
     keywords=[
         # eg: 'keyword1', 'keyword2', 'keyword3',
