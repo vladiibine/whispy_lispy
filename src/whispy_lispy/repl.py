@@ -11,10 +11,12 @@ from whispy_lispy import skip_steps, scopes2, exceptions
 PS1 = '(WL)$'
 PS2 = '.....'
 PS3 = '(WL):'
+GREETING = '------<Welcome to the Whispy Lispy interpreter!>------'
 
 
 def repl():
     """Main REPL loop"""
+    print(GREETING)
     scope = scopes2.Scope()
     while True:
         try:
