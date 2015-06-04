@@ -19,8 +19,7 @@ def get_ast_from_text2(text):
     ))
 
 
-
-def interpret_text2(text, scope):
+def interpret_text2(text, scope=None):
     if scope is None:
         scope = scopes2.Scope()
     return interpreter2.interpret_ast(get_ast_from_text2(text), scope)
