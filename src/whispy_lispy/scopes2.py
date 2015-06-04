@@ -41,7 +41,8 @@ class OmniPresentScope(dict):
 
         self[types.Symbol(('sum',))] = internal_sum
         self[types.Symbol(('sub',))] = (
-            lambda *nums: python_value_to_internal_type(reduce(sub, nums)))
+            lambda *nums: python_value_to_internal_type(
+                reduce(sub, [num.values[0] for num in nums])))
 
         # the input can't yet return strings - we don't parse those yet, so
         # it can only return the types we know: float, int and bool

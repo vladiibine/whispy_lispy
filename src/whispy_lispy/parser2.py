@@ -10,7 +10,7 @@ because the top level list is special
 """
 
 from __future__ import unicode_literals, absolute_import
-from whispy_lispy import parser, ast, keywords, types
+from whispy_lispy import ast, keywords, types
 
 
 def literal_creator(internal_type):
@@ -22,7 +22,6 @@ def literal_creator(internal_type):
     def wrapper(values):
         return ast.Literal(tuple([internal_type(values)]))
     return wrapper
-
 
 
 def determine_operation_type(cstree):
@@ -78,12 +77,35 @@ def transform_quote_operator_into_function(tree, container_cls=ast.List):
     return tree.alike(tuple(new_children))
 
 
+def transform_one_to_one(cstree,
+                         operation_determiner=determine_operation_type):
+    """Transform a concrete syntax tree into an abstract one, preserving the
+    tree structure
+
+    :type cstree: cst.ConcreteSyntaxNode
+    :param operation_determiner: a function returning the class of the new node
+    :rtype: ast.AbstractSyntaxNode
+    """
+    values = []
+    if cstree.is_leaf():
+        node_class = operation_determiner(cstree)
+        return node_class(tuple(cstree.values))
+
+    for value in cstree.values:
+        if value.is_leaf():
+            node_class = operation_determiner(value)
+            values.append(node_class(tuple(value.values)))
+        else:
+            values.append(transform_one_to_one(value, operation_determiner))
+    return operation_determiner(cstree)(tuple(values))
+
+
 def get_ast_from_cst(cstree):
     """
     :param cst.ConcreteSyntaxNode cstree: the concrete syntax tree
     :rtype: ast.AbstractSyntaxNode
     """
-    result = parser.transform_one_to_one(cstree, determine_operation_type)
+    result = transform_one_to_one(cstree)
 
     # Here, all the operators should be transformed to function calls
     result = transform_quote_operator_into_function(result)

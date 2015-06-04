@@ -13,7 +13,7 @@ else:
     from unittest import mock
     import io as StringIO
 
-from whispy_lispy import interpreter, skip_steps
+from whispy_lispy import skip_steps, scopes2, types
 
 
 SAMPLE_SUM_NUMBERS_AND_RETURN_VALUE = """\
@@ -32,21 +32,15 @@ SAMPLE_SUBTRACT_AND_SUM = """\
 
 
 class IntegrationTestCase(unittest.TestCase):
-    def test_sum_3_numbers_in_dummy_scope(self):
-        scope = {'sum': lambda *nums: sum(nums)}
-        ast = skip_steps.get_ast_from_text(SAMPLE_SUM_NUMBERS_AND_RETURN_VALUE)
-        result = interpreter.interpret_ast(ast, scope)
-
-        self.assertEqual(scope['x'], 7)
-        self.assertEqual(result, 8)
-
     @mock.patch('sys.stdin', StringIO.StringIO('2'))
     @mock.patch('sys.stdout')
     def test_user_input_sum_subtract_return_and_print_in_normal_scope(
             self, stdout_mock):
-        result = skip_steps.interpret_text(SAMPLE_SUBTRACT_AND_SUM)
+
+        scope = scopes2.Scope()
+        result = skip_steps.interpret_text2(SAMPLE_SUBTRACT_AND_SUM, scope)
 
         # Got the user input, calculated stuff, returned a value
-        self.assertEqual(result, 21)
+        self.assertEqual(result, types.Int((21,)))
         # Printed the result to standard output
-        stdout_mock.assert_has_calls([mock.call.write('7')])
+        stdout_mock.assert_has_calls([mock.call.write(str(types.Int((7,))))])
