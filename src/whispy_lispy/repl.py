@@ -21,12 +21,12 @@ def repl():
             print(PS1, end=' ')
             text = get_user_input()
             try:
-                # import pydevd; pydevd.settrace()
                 result = skip_steps.interpret_text2(text, scope)
                 print(PS3, result, end='\n\n')
             except exceptions.BaseWhispyLispyError as err:
                 print(err, end='\n\n')
         except KeyboardInterrupt:
+            print()
             continue
 
         except EOFError:
@@ -41,12 +41,12 @@ def gracefully_exit():
             confirmation = raw_input('Really quit? (y/n)').lower()
         if confirmation == 'y':
             print()
-            skip_steps.interpret_text('(quit)')
+            skip_steps.interpret_text2('(quit)')
         else:
             return
     except EOFError:
         print()
-        skip_steps.interpret_text('(quit)')
+        skip_steps.interpret_text2('(quit)')
 
 
 def get_user_input(parens_count=0, inside_string=False):

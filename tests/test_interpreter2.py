@@ -65,3 +65,29 @@ class InterpreterTestCase(unittest.TestCase):
         self.assertEqual(
             scope[types.Symbol(('y',))], types.Int((7,))
         )
+
+    def test_assign_value_from_reference_simple(self):
+        # Had troubles with this one after the last test was passing
+        # (def x 9)
+        # (def y x)
+        tree = ast.RootAbstractSyntaxNode((
+            ast.List((
+                ast.Symbol(('def',)),
+                ast.Symbol(('x',)),
+                ast.Literal((types.Int((9,)),))
+            )),
+            ast.List((
+                ast.Symbol(('def',)),
+                ast.Symbol(('y',)),
+                ast.Symbol(('x',))
+            ))
+        ))
+
+        scope = scopes2.Scope()
+        interpreter2.interpret_ast(tree, scope)
+        self.assertEqual(
+            scope[types.Symbol(('y',))],
+            types.Int((9,))
+        )
+
+
