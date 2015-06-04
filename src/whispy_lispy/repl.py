@@ -6,7 +6,7 @@ import six
 if six.PY3:
     raw_input = input
 
-from whispy_lispy import skip_steps, scopes, exceptions
+from whispy_lispy import skip_steps, scopes2, exceptions
 
 PS1 = '(WL)$'
 PS2 = '.....'
@@ -15,13 +15,14 @@ PS3 = '(WL):'
 
 def repl():
     """Main REPL loop"""
-    scope = scopes.Scope()
+    scope = scopes2.Scope()
     while True:
         try:
             print(PS1, end=' ')
             text = get_user_input()
             try:
-                result = skip_steps.interpret_text(text, scope)
+                # import pydevd; pydevd.settrace()
+                result = skip_steps.interpret_text2(text, scope)
                 print(PS3, result, end='\n\n')
             except exceptions.BaseWhispyLispyError as err:
                 print(err, end='\n\n')

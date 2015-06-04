@@ -19,6 +19,9 @@ class Type(object):
             return False
         return self.values == other.values
 
+    def __hash__(self):
+        return hash(self.values)
+
 class String(Type):
     def __init__(self, values):
         """The concrete syntax nodes didn't know much difference
@@ -30,6 +33,11 @@ class String(Type):
 
     def __repr__(self):
         return '$String {}'.format(self.values[0])
+
+    def __eq__(self, other):
+        if self.__class__ != other.__class__:
+            return False
+        return self.values == other.values
 
 
 class Int(Type):
