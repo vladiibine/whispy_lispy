@@ -13,14 +13,13 @@ class InterpreterTestCase(unittest.TestCase):
     def test_return_the_last_provided_value(self):
         tree = ast.RootAbstractSyntaxNode((
             ast.Value((types.Int((3,)),)),
-            ast.Value((types.String(('"ff"',)),))))
+            ast.Value((types.String(('ff',)),))))
         self.assertEqual(
-            interpreter2.interpret_ast(tree, {}), types.String(('"ff"',)))
+            interpreter2.interpret_ast(tree, {}), types.String(('ff',)))
 
     def test_simple_literal_assignment_and_returns_nothing(self):
         tree = ast.RootAbstractSyntaxNode((
-            ast.List((
-                ast.Symbol(('def',)),
+            ast.Assign((
                 ast.Symbol(('x',)),
                 ast.Value((types.Int((3,)),)))),))
         scope = {}
@@ -46,13 +45,11 @@ class InterpreterTestCase(unittest.TestCase):
         # (def x 4)
         # (def y (sum x 1 2)
         tree = ast.RootAbstractSyntaxNode((
-            ast.List((
-                ast.Symbol(('def',)),
+            ast.Assign((
                 ast.Symbol(('x',)),
                 ast.Value((types.Int((4,)),))
             )),
-            ast.List((
-                ast.Symbol(('def',)),
+            ast.Assign((
                 ast.Symbol(('y',)),
                 ast.List((
                     ast.Symbol(('sum',)),
@@ -71,13 +68,11 @@ class InterpreterTestCase(unittest.TestCase):
         # (def x 9)
         # (def y x)
         tree = ast.RootAbstractSyntaxNode((
-            ast.List((
-                ast.Symbol(('def',)),
+            ast.Assign((
                 ast.Symbol(('x',)),
                 ast.Value((types.Int((9,)),))
             )),
-            ast.List((
-                ast.Symbol(('def',)),
+            ast.Assign((
                 ast.Symbol(('y',)),
                 ast.Symbol(('x',))
             ))
@@ -91,4 +86,19 @@ class InterpreterTestCase(unittest.TestCase):
         )
 
 
-
+class FunctionsTestCase(unittest.TestCase):
+    def test_simple_function_returning_constant_is_created(self):
+        # (def (f) 1)
+        # function that returns a constant
+        tree = ast.RootAbstractSyntaxNode((
+            ast.Assign((
+                ast.List((ast.Symbol(('f',)),)),
+                ast.Value((types.Int((45,)),)))),))
+        scope = scopes2.Scope()
+        interpreter2.interpret_ast(tree, scope)
+        self.assertEqual(
+            scope[types.Symbol(('f',))],
+            types.Function((
+                types.String(('f',)),
+                (),
+                ast.Value((types.Int((45,)),)))))

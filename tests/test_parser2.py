@@ -36,7 +36,7 @@ class Parser2TestCase(unittest.TestCase):
                           ast.Symbol(('a',)))),)))
 
     def test_transform_2_non_nested_quote_operators_into_function_calls(self):
-        # ''a 1 'b
+        # 'a 1 'b
         result = parser2.get_ast_from_cst(
             cst.RootConcreteSyntaxnode((
                 cn(('\'',)),
@@ -97,7 +97,7 @@ class Parser2TestCase(unittest.TestCase):
             ast.RootAbstractSyntaxNode((
                 ast.Value((types.Int((1, )),)),
                 ast.Value((types.Float((2.3,)),)),
-                ast.Value((types.String(('"x"',)),)),
+                ast.Value((types.String(('x',)),)),
                 ast.Value((types.Bool((True,)),))
             ))
         )
@@ -114,10 +114,102 @@ class Parser2TestCase(unittest.TestCase):
                         cn((3.14,)))))),)))
         expected = ast.RootAbstractSyntaxNode((
             ast.List((
-                ast.Value((types.String(('"x"',)),)),
+                ast.Value((types.String(('x',)),)),
                 ast.Value((types.Int((1,)),)),
                 ast.List((
                     ast.Value((types.Bool((True,)),)),
                     ast.Value((types.Float((3.14,)),)))))),))
 
+        self.assertEqual(actual, expected)
+
+
+class ParserAssignmentTestCase(unittest.TestCase):
+    def test_simple_variable_assignment(self):
+        # (def x 1)
+        actual = parser2.get_ast_from_cst(
+            cst.RootConcreteSyntaxnode((
+                cn((
+                    cn((keywords.DEFINITION,)),  # def
+                    cn(('x',)),
+                    cn((14,)))),)))
+        expected = ast.RootAbstractSyntaxNode((
+            ast.Assign((
+                ast.Symbol(('x',)),
+                ast.Value((types.Int((14,)),))
+            )),
+        ))
+        self.assertEqual(actual, expected)
+
+    def test_nested_variable_assignment(self):
+        # (def x (def y 33)) - could happen...
+        actual = parser2.get_ast_from_cst(
+            cst.RootConcreteSyntaxnode((
+                cn((
+                    cn((keywords.DEFINITION,)),
+                    cn(('x',)),
+                    cn((
+                        cn((keywords.DEFINITION,)),
+                        cn(('y',)),
+                        cn((33,)))))),)))
+        expected = ast.RootAbstractSyntaxNode((
+            ast.Assign((
+                ast.Symbol(('x',)),
+                ast.Assign((
+                    ast.Symbol(('y',)),
+                    ast.Value((types.Int((33,)),)))))),))
+        self.assertEqual(actual, expected)
+
+    def test_simple_function_definition_syntax(self):
+        # (def (f) 1)
+        actual = parser2.get_ast_from_cst(
+            cst.RootConcreteSyntaxnode((
+                cn((
+                    cn((keywords.DEFINITION,)),
+                    cn((
+                        cn(('f',)),)),
+                    cn((1,)))),)))
+        expected = ast.RootAbstractSyntaxNode((
+            ast.Assign((
+                ast.List((
+                    ast.Symbol(('f',)),)),
+                ast.Value((types.Int((1,)),)))),))
+        self.assertEqual(actual, expected)
+
+    def test_nested_function_and_variable_assignment(self):
+        # (def (f (def y 9)) (def z (def (t g v) 87)))
+        actual = parser2.get_ast_from_cst(
+            cst.RootConcreteSyntaxnode((
+                cn((
+                    cn((keywords.DEFINITION,)),
+                    cn((
+                        cn(('f',)),
+                        cn((
+                            cn((keywords.DEFINITION,)),
+                            cn(('y',)),
+                            cn((9,)))))),
+                    cn((
+                        cn((keywords.DEFINITION,)),
+                        cn(('z',)),
+                        cn((
+                            cn((keywords.DEFINITION,)),
+                            cn((
+                                cn(('t',)),
+                                cn(('g',)),
+                                cn(('v',)))),
+                            cn((87,)))))))),)))
+        expected = ast.RootAbstractSyntaxNode((
+            ast.Assign((
+                ast.List((
+                    ast.Symbol(('f',)),
+                    ast.Assign((             # This won't get evaluated
+                        ast.Symbol(('y',)),
+                        ast.Value((types.Int((9,)),)))))),
+                ast.Assign((
+                    ast.Symbol(('z',)),
+                    ast.Assign((
+                        ast.List((
+                            ast.Symbol(('t',)),
+                            ast.Symbol(('g',)),
+                            ast.Symbol(('v',)))),
+                        ast.Value((types.Int((87,)),)))),)))),))
         self.assertEqual(actual, expected)

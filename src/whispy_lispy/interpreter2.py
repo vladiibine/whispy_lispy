@@ -22,10 +22,30 @@ def interpret_ast(astree, scope=None):
     if isinstance(astree, ast.List):
         return interpret_list(astree, scope)
 
+    if isinstance(astree, ast.Assign):
+        return interpret_assign(astree, scope)
+
     for elem in astree.values:
         result = interpret_ast(elem, scope)
 
     return result
+
+
+def interpret_assign(astree, scope):
+    # Simple symbol assignment
+    if isinstance(astree[0], ast.Symbol):
+        scope[types.Symbol(astree[0].values)] = interpret_ast(astree[1], scope)
+
+    # Function assignment
+    elif isinstance(astree[0], ast.List):
+        # first: assume it contains a single value - means no formal parameters
+        scope_key = types.Symbol(astree[0].values[0].values)
+        new_function = types.Function((
+            types.String(astree[0].values[0].values),  # the function name
+            (),  # the formal parameter names
+            astree[1]  # The AST that should be interpreted
+        ))
+        scope[scope_key] = new_function
 
 
 def interpret_leaf(astree, scope):
@@ -53,14 +73,6 @@ def interpret_list(astree, scope):
     :param scope:
     :return:
     """
-    if astree[0].values[0] == keywords.DEFINITION:
-        if isinstance(astree[2], ast.List):
-            scope[types.Symbol(astree[1].values)] = interpret_ast(astree[2], scope)  # noqa
-        elif isinstance(astree[2], ast.Value):
-            scope[types.Symbol(astree[1].values)] = interpret_ast(astree[2][0], scope)  # noqa
-        elif isinstance(astree[2], ast.Symbol):
-            scope[types.Symbol(astree[1].values)] = interpret_symbol(astree[2], scope)  # noqa
-        return
 
     func = scope[types.Symbol(astree[0].values)]
     return func(*[interpret_ast(val, scope) for val in astree.values[1:]])

@@ -2,7 +2,6 @@
 """Abstract syntax tree stuff
 """
 from __future__ import unicode_literals
-from whispy_lispy import exceptions
 
 
 class AbstractSyntaxNode(object):
@@ -43,19 +42,23 @@ class AbstractSyntaxNode(object):
         return self.__class__(values, evaluable)
 
 
-class RootAbstractSyntaxNode(AbstractSyntaxNode):
+class Container(AbstractSyntaxNode):
+    """Marks that this node contains other nodes"""
+
+
+class RootAbstractSyntaxNode(Container):
     """The abstract node marking the root of the node hierarchy"""
     def __repr__(self):
         return '<RaN {}>'.format(self.values)
 
 
-class Apply(AbstractSyntaxNode):
+class Apply(Container):
     """Abstract apply"""
     def __repr__(self):
         return '<Apply {}>'.format(self.values)
 
 
-class Quote(AbstractSyntaxNode):
+class Quote(Container):
     """Abstract quote"""
     def __repr__(self):
         return '<Quote {}>'.format(self.values)
@@ -106,6 +109,23 @@ class String(Value):
 class Assign(AbstractSyntaxNode):
     """Represent the assignment of a value to a symbol
 
+    Syntax: `(def A B)`
+
+    Assignments are expressions, their return value is null.
+    `A` can be a symbol, or list.
+    If it's a list, it should be a flat list of symbols.
+    The list isn't evaluated "normally", so anything other than symbols in it
+    will not get evaluated, and will simply be ignored (like a comment one
+    could say)
+
+    If `A` is a symbol, it will become a variable in the current
+    scope. It it's a list (a b c...), the first symbol in it will become
+    a function in the scope, and its parameter list will be the remaining
+    symbols in A, namely (b c ...)
+
+    The second argument, `B` can be any expression and will always be
+    evaluated.
+
     Will be evaluated in a certain scope
     """
     def __repr__(self):
@@ -114,41 +134,7 @@ class Assign(AbstractSyntaxNode):
         return '<Assign {} := {} >'.format(self.values[0], self.values[1])
 
 
-class Car(AbstractSyntaxNode):
-    """Represents the 'car' operation (returns first object in a list)"""
-    def __init__(self, values, evaluable=True):
-        """Throw exception if more or less than 1 argument is received
-
-        :type values: tuple
-        """
-        if not isinstance(values, tuple):
-            raise ASTError('Invalid initialization. Values must be a tuple')
-        if len(values) != 1:
-            raise exceptions.WhispyLispySyntaxError(
-                "Can only pass 1 argument to 'car'. {} given"
-                .format(len(values))
-            )
-        # This can't be used in the constructor, because during the 1:1
-        # translation, this will be broken. Must validate this however, so
-        # let's make a method 'check_consistency' or smth, that can be checked
-        # after the node is considered "committed"
-        # if values[0].is_leaf():
-        #     raise syntax.LispySyntaxError(
-        #         "Can't apply 'car' to a simple atom. Need a list, but got {}"
-        #         .format(values[0])
-        #     )
-        super(Car, self).__init__(values, evaluable)
-
-    def __repr__(self):
-        return '<CAR {}>'.format(self.values[0])
-
-
-class ASTError(exceptions.BaseWhispyLispyError):
-    """The AST is malformed - most likely user's fault"""
-    pass
-
-
-class List(AbstractSyntaxNode):
+class List(Container):
     """The abstract list"""
     def __repr__(self):
         return '<List :{}>'.format(self.values)

@@ -34,7 +34,7 @@ def determine_operation_type(cstree):
         return ast.List
     else:
         if cstree.is_string():
-            return literal_creator(types.String)
+            return literal_creator(types.String.from_quoted_values)
         if cstree.is_bool():
             return literal_creator(types.Bool)
         if cstree.is_int():
@@ -44,6 +44,8 @@ def determine_operation_type(cstree):
         if cstree.is_symbol():
             if cstree.symbol_equals(keywords.OPERATOR_QUOTE):
                 return ast.OperatorQuote
+            if cstree.symbol_equals(keywords.DEFINITION):
+                return ast.Assign
             return ast.Symbol
 
 
@@ -100,6 +102,42 @@ def transform_one_to_one(cstree,
     return operation_determiner(cstree)(tuple(values))
 
 
+def create_proper_assignment_nodes(astree):
+    """Creates Assignment nodes
+
+    This is important, because the assignment operation is more lower level
+    than a function call. Otherwise, we'd have problems with expressions like
+    `(define (f x) 1)`. This would try to evaluate (f x) before the definition
+    took place.
+
+    Previously:
+        Node: List
+          - Child: Symbol 'def'
+          - ...Children
+
+    After this transformation:
+        Node: Assign
+          - ...Children
+
+    :param ast.AbstractSyntaxNode astree: the tree to start with
+    :rtype: ast.AbstractSyntaxNode
+    """
+    if not isinstance(astree, ast.Container):
+        return astree
+
+    if isinstance(astree[0], ast.Assign):
+        values = []
+        for child in astree.values[1:]:
+            values.append(create_proper_assignment_nodes(child))
+        return ast.Assign(tuple(values))
+
+    values = []
+    for child in astree.values:
+        values.append(create_proper_assignment_nodes(child))
+
+    return astree.alike(tuple(values))
+
+
 def get_ast_from_cst(cstree):
     """
     :param cst.ConcreteSyntaxNode cstree: the concrete syntax tree
@@ -109,6 +147,7 @@ def get_ast_from_cst(cstree):
 
     # Here, all the operators should be transformed to function calls
     result = transform_quote_operator_into_function(result)
+    result = create_proper_assignment_nodes(result)
     return result
 
 

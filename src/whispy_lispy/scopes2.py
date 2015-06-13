@@ -21,7 +21,7 @@ def python_value_to_internal_type(value):
     elif isinstance(value, bool):
         return types.Bool((value,))
     elif isinstance(value, six.string_types):
-        return types.String((value,))
+        return types.String.from_quoted_values(value)
 
 
 class OmniPresentScope(dict):

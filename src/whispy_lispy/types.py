@@ -24,13 +24,15 @@ class Type(object):
 
 
 class String(Type):
-    def __init__(self, values):
+    @classmethod
+    def from_quoted_values(cls, values):
         """The concrete syntax nodes didn't know much difference
         between strings and symbols. They determined the difference between
         these by letting the start and end quotes on the strings.
 
         This "madness" stops here"""
-        super(String, self).__init__((values[0][1:-1],))
+
+        return cls((values[0][1:-1],))
 
     def __repr__(self):
         return '$String {}'.format(self.values[0])
@@ -64,3 +66,18 @@ class List(Type):
 class Symbol(Type):
     def __repr__(self):
         return '$Symbol {}'.format((self.values[0]))
+
+
+class Function(Type):
+    """The Function object.
+
+    Its values list must contain (on the given positions):
+    0: the function name
+    1: the function argument names
+    2: the AST that will get executed
+
+    ...Stuff will get added here (like the closure scope)
+    """
+    def __repr__(self):
+        return '$[Func {name} at {address}]'.format(
+            name=self.values[0], address=id(self))
