@@ -56,7 +56,7 @@ def interpret_list(astree, scope):
     if astree[0].values[0] == keywords.DEFINITION:
         if isinstance(astree[2], ast.List):
             scope[types.Symbol(astree[1].values)] = interpret_ast(astree[2], scope)  # noqa
-        elif isinstance(astree[2], ast.Literal):
+        elif isinstance(astree[2], ast.Value):
             scope[types.Symbol(astree[1].values)] = interpret_ast(astree[2][0], scope)  # noqa
         elif isinstance(astree[2], ast.Symbol):
             scope[types.Symbol(astree[1].values)] = interpret_symbol(astree[2], scope)  # noqa

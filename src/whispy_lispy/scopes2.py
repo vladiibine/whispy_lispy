@@ -23,8 +23,9 @@ def python_value_to_internal_type(value):
     elif isinstance(value, six.string_types):
         return types.String((value,))
 
+
 class OmniPresentScope(dict):
-    """Provides the (non builtin) functions that are included in all scopes
+    """Provides the builtin functions that are included in all scopes
 
     Provided functions:
     sum -> performs addition (on any number of numbers)
@@ -44,8 +45,6 @@ class OmniPresentScope(dict):
             lambda *nums: python_value_to_internal_type(
                 reduce(sub, [num.values[0] for num in nums])))
 
-        # the input can't yet return strings - we don't parse those yet, so
-        # it can only return the types we know: float, int and bool
         def get_input():
             """
             :rtype: str| float | int | bool | None

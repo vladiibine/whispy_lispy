@@ -20,7 +20,7 @@ def literal_creator(internal_type):
     :return:
     """
     def wrapper(values):
-        return ast.Literal(tuple([internal_type(values)]))
+        return ast.Value(tuple([internal_type(values)]))
     return wrapper
 
 

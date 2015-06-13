@@ -22,6 +22,7 @@ class Type(object):
     def __hash__(self):
         return hash(self.values)
 
+
 class String(Type):
     def __init__(self, values):
         """The concrete syntax nodes didn't know much difference

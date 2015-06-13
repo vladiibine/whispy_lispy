@@ -50,7 +50,7 @@ class Parser2TestCase(unittest.TestCase):
                 ast.List((
                     ast.Symbol((keywords.BUILTIN_QUOTE_FUNC,)),
                     ast.Symbol(('a',)))),
-                ast.Literal((types.Int((1,)),)),
+                ast.Value((types.Int((1,)),)),
                 ast.List((
                     ast.Symbol((keywords.BUILTIN_QUOTE_FUNC,)),
                     ast.Symbol(('b',)))),
@@ -84,7 +84,7 @@ class Parser2TestCase(unittest.TestCase):
             result,
             ast.RootAbstractSyntaxNode((
                 ast.List((
-                    ast.Literal((types.Int((1,)),)),)),)))
+                    ast.Value((types.Int((1,)),)),)),)))
 
     def test_all_literal_types_are_created(self):
         # 1 2.3 "x" #t
@@ -95,10 +95,10 @@ class Parser2TestCase(unittest.TestCase):
         self.assertEqual(
             result,
             ast.RootAbstractSyntaxNode((
-                ast.Literal((types.Int((1, )),)),
-                ast.Literal((types.Float((2.3,)),)),
-                ast.Literal((types.String(('"x"',)),)),
-                ast.Literal((types.Bool((True,)),))
+                ast.Value((types.Int((1, )),)),
+                ast.Value((types.Float((2.3,)),)),
+                ast.Value((types.String(('"x"',)),)),
+                ast.Value((types.Bool((True,)),))
             ))
         )
 
@@ -114,10 +114,10 @@ class Parser2TestCase(unittest.TestCase):
                         cn((3.14,)))))),)))
         expected = ast.RootAbstractSyntaxNode((
             ast.List((
-                ast.Literal((types.String(('"x"',)),)),
-                ast.Literal((types.Int((1,)),)),
+                ast.Value((types.String(('"x"',)),)),
+                ast.Value((types.Int((1,)),)),
                 ast.List((
-                    ast.Literal((types.Bool((True,)),)),
-                    ast.Literal((types.Float((3.14,)),)))))),))
+                    ast.Value((types.Bool((True,)),)),
+                    ast.Value((types.Float((3.14,)),)))))),))
 
         self.assertEqual(actual, expected)

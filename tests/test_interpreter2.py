@@ -7,13 +7,13 @@ from whispy_lispy import interpreter2, ast, types, scopes2
 
 class InterpreterTestCase(unittest.TestCase):
     def test_return_native_int(self):
-        tree = ast.RootAbstractSyntaxNode((ast.Literal((types.Int((3, )),)),))
+        tree = ast.RootAbstractSyntaxNode((ast.Value((types.Int((3, )),)),))
         self.assertEqual(interpreter2.interpret_ast(tree, {}), types.Int((3,)))
 
     def test_return_the_last_provided_value(self):
         tree = ast.RootAbstractSyntaxNode((
-            ast.Literal((types.Int((3,)),)),
-            ast.Literal((types.String(('"ff"',)),))))
+            ast.Value((types.Int((3,)),)),
+            ast.Value((types.String(('"ff"',)),))))
         self.assertEqual(
             interpreter2.interpret_ast(tree, {}), types.String(('"ff"',)))
 
@@ -22,7 +22,7 @@ class InterpreterTestCase(unittest.TestCase):
             ast.List((
                 ast.Symbol(('def',)),
                 ast.Symbol(('x',)),
-                ast.Literal((types.Int((3,)),)))),))
+                ast.Value((types.Int((3,)),)))),))
         scope = {}
 
         result = interpreter2.interpret_ast(tree, scope)
@@ -35,8 +35,8 @@ class InterpreterTestCase(unittest.TestCase):
         tree = ast.RootAbstractSyntaxNode((
             ast.List((
                 ast.Symbol(('sum',)),
-                ast.Literal((types.Int((3,)),)),
-                ast.Literal((types.Int((4,)),))
+                ast.Value((types.Int((3,)),)),
+                ast.Value((types.Int((4,)),))
             )),))
 
         result = interpreter2.interpret_ast(tree)
@@ -49,7 +49,7 @@ class InterpreterTestCase(unittest.TestCase):
             ast.List((
                 ast.Symbol(('def',)),
                 ast.Symbol(('x',)),
-                ast.Literal((types.Int((4,)),))
+                ast.Value((types.Int((4,)),))
             )),
             ast.List((
                 ast.Symbol(('def',)),
@@ -57,7 +57,7 @@ class InterpreterTestCase(unittest.TestCase):
                 ast.List((
                     ast.Symbol(('sum',)),
                     ast.Symbol(('x',)),
-                    ast.Literal((types.Int((1,)),)),
+                    ast.Value((types.Int((1,)),)),
                     ast.List((types.Int((2,)),))))))))
 
         scope = scopes2.Scope()
@@ -74,7 +74,7 @@ class InterpreterTestCase(unittest.TestCase):
             ast.List((
                 ast.Symbol(('def',)),
                 ast.Symbol(('x',)),
-                ast.Literal((types.Int((9,)),))
+                ast.Value((types.Int((9,)),))
             )),
             ast.List((
                 ast.Symbol(('def',)),
@@ -89,5 +89,6 @@ class InterpreterTestCase(unittest.TestCase):
             scope[types.Symbol(('y',))],
             types.Int((9,))
         )
+
 
 

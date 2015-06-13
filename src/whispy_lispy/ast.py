@@ -73,31 +73,31 @@ class Symbol(AbstractSyntaxNode):
         return '<Symb: {}>'.format(self.values[0])
 
 
-class Literal(AbstractSyntaxNode):
+class Value(AbstractSyntaxNode):
     """Superclass of all values"""
     def __repr__(self):
         return '<Literal {}>'.format(self.values)
 
 
-class Int(Literal):
+class Int(Value):
     """Represents an integer value"""
     def __repr__(self):
         return '<{}>'.format(self.values[0])
 
 
-class Float(Literal):
+class Float(Value):
     """Represents a floating point value"""
     def __repr__(self):
         return '<{}>'.format(self.values[0])
 
 
-class Bool(Literal):
+class Bool(Value):
     """Represents a boolean value"""
     def __repr__(self):
         return '<{}>'.format(self.values[0])
 
 
-class String(Literal):
+class String(Value):
     """Represents a character string"""
     def __repr__(self):
         return '<{}>'.format(self.values[0])
