@@ -1,7 +1,7 @@
 # -*- coding utf-8 -*-
 from __future__ import unicode_literals, absolute_import
 
-from whispy_lispy import ast, keywords, types, scopes2
+from whispy_lispy import ast, types, scopes2
 
 
 def interpret_ast(astree, scope=None):
@@ -41,8 +41,10 @@ def interpret_assign(astree, scope):
         # first: assume it contains a single value - means no formal parameters
         scope_key = types.Symbol(astree[0].values[0].values)
         new_function = types.Function((
-            types.String(astree[0].values[0].values),  # the function name
-            (),  # the formal parameter names
+            # the function name
+            types.String(astree[0].values[0].values),
+            # the formal parameter names
+            tuple([types.Symbol(elem.values) for elem in astree[0][1:]]),
             astree[1]  # The AST that should be interpreted
         ))
         scope[scope_key] = new_function
@@ -73,6 +75,7 @@ def interpret_list(astree, scope):
     :param scope:
     :return:
     """
-
     func = scope[types.Symbol(astree[0].values)]
-    return func(*[interpret_ast(val, scope) for val in astree.values[1:]])
+    return func(
+        interpret_ast,
+        *[interpret_ast(val, scope) for val in astree.values[1:]])

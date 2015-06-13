@@ -38,14 +38,14 @@ class OmniPresentScope(dict):
         # The sum function sums numbers
         def internal_sum(*nums):
             return python_value_to_internal_type(
-                sum(num.values[0] for num in nums))
+                sum(num.values[0] for num in nums[1:]))
 
         self[types.Symbol(('sum',))] = internal_sum
         self[types.Symbol(('sub',))] = (
             lambda *nums: python_value_to_internal_type(
-                reduce(sub, [num.values[0] for num in nums])))
+                reduce(sub, [num.values[0] for num in nums[1:]])))
 
-        def get_input():
+        def get_input(interpreter):
             """
             :rtype: str| float | int | bool | None
             """
@@ -105,3 +105,8 @@ class Scope(dict):
             raise exceptions.UnboundSymbol(
                 'Symbol "{}" can\'t be found in scope'.format(item)
             )
+
+
+class FunctionScope(Scope):
+    def __init__(self, param_names, arguments):
+        super(FunctionScope, self).__init__(dict(zip(param_names, arguments)))

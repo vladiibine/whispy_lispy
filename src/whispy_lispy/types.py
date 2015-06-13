@@ -73,11 +73,32 @@ class Function(Type):
 
     Its values list must contain (on the given positions):
     0: the function name
-    1: the function argument names
+    1: the formal parameter names
     2: the AST that will get executed
+    3: The interpreter to interpret the AST - this is not so smart really
 
     ...Stuff will get added here (like the closure scope)
     """
     def __repr__(self):
-        return '$[Func {name} at {address}]'.format(
-            name=self.values[0], address=id(self))
+        params = self.values[1]
+        return '$[Func {name}{params} at {address}]'.format(
+            name=self.values[0], address=id(self), params=params)
+
+    @property
+    def code(self):
+        return self.values[2]
+
+    @property
+    def params(self):
+        return self.values[1]
+
+    def __call__(self, interpreter, *args):
+        """
+        :param args: instances of the whispy_lispy.types classes
+        """
+        from whispy_lispy import scopes2
+        local_scope = scopes2.FunctionScope(self.params, args)
+
+        result = interpreter(self.code, local_scope)
+
+        return result

@@ -86,7 +86,7 @@ class InterpreterTestCase(unittest.TestCase):
         )
 
 
-class FunctionsTestCase(unittest.TestCase):
+class FunctionCreationTestCase(unittest.TestCase):
     def test_simple_function_returning_constant_is_created(self):
         # (def (f) 1)
         # function that returns a constant
@@ -102,3 +102,61 @@ class FunctionsTestCase(unittest.TestCase):
                 types.String(('f',)),
                 (),
                 ast.Value((types.Int((45,)),)))))
+
+    def test_simple_function_with_parameters_is_created(self):
+        # (def (f a b) 16
+        tree = ast.RootAbstractSyntaxNode((
+            ast.Assign((
+                ast.List((
+                    ast.Symbol(('f',)),
+                    ast.Symbol(('a',)),
+                    ast.Symbol(('b',))
+                )),
+                ast.Value((types.Int((16,)),)))),))
+        scope = scopes2.Scope()
+        interpreter2.interpret_ast(tree, scope)
+        self.assertEqual(
+            scope[types.Symbol(('f',))],
+            types.Function((
+                types.String(('f',)),
+                (types.Symbol(('a',)), types.Symbol(('b',))),
+                ast.Value((types.Int((16,)),)),)))
+
+
+class FunctionExecutionTestCase(unittest.TestCase):
+    def test_simple_function_returns_constant_value(self):
+        # (def (f) 1)
+        # (f)
+        tree = ast.RootAbstractSyntaxNode((
+            ast.Assign((
+                ast.List((
+                    ast.Symbol(('f',)),)),
+                ast.Value((types.Int((1,)),)))),
+            ast.List((ast.Symbol(('f',)),))
+        ))
+        result = interpreter2.interpret_ast(tree)
+
+        self.assertEqual(result, types.Int((1,)))
+
+    def test_simple_function_wraps_sum(self):
+        # (def (f a b) (sum a b))
+        # (f 11 22)
+        tree = ast.RootAbstractSyntaxNode((
+            ast.Assign((
+                ast.List((
+                    ast.Symbol(('f',)),
+                    ast.Symbol(('a',)),
+                    ast.Symbol(('b',))
+                )),
+                ast.List((
+                    ast.Symbol(('sum',)),
+                    ast.Symbol(('a',)),
+                    ast.Symbol(('b',)),)))),
+            ast.List((
+                ast.Symbol(('f',)),
+                ast.Value((types.Int((11,)),)),
+                ast.Value((types.Int((22,)),))
+            ))
+        ))
+        result = interpreter2.interpret_ast(tree)
+        self.assertEqual(result, types.Int((33,)))
