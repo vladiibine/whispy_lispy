@@ -1,46 +1,10 @@
 # -*- coding utf-8 -*-
 from __future__ import unicode_literals, absolute_import
 
-import six
 import unittest
 from whispy_lispy import interpreter2, ast, types, scopes2
 
-
-def r(value):
-    """Return a RootAbstractSyntaxNode"""
-    return any_node(value, ast.RootAbstractSyntaxNode)
-
-def v(value):
-    """Return an ast.Value(types.<Proper type>(value))"""
-    return ast.Value((
-        {bool: types.Bool,
-         int: types.Int,
-         float: types.Float,
-         six.string_types: types.String
-         }.get(type(value))((value,)),))
-
-def s(value):
-    """Return an ast.Symbol"""
-    return any_node(value, ast.Symbol)
-
-
-def any_node(value, ntype):
-    """Create the provided node type"""
-    if isinstance(value, (tuple, list)):
-        return ntype(tuple(value))
-    return ntype((value,))
-
-def l(*values):
-    """Return an ast.List"""
-    return any_node(values, ast.List)
-
-def a(value):
-    """Return an assignment"""
-    return any_node(value, ast.Assign)
-
-def c(*values):
-    """Return a condition"""
-    return any_node(values, ast.Condition)
+from .constructors import (a_c, a_li, a_r, a_s, a_v, a_la)
 
 class InterpreterTestCase(unittest.TestCase):
     def test_return_native_int(self):
@@ -396,20 +360,20 @@ class ConditionEvaluationTestCase(unittest.TestCase):
 
     def test_condition_returns_first_true_branch(self):
         # (cond (#f 1) (#f 2) (#t 3) ($t 4))
-        tree = r(
-            c(
-                l(
-                    v(False),
-                    v(1)),
-                l(
-                    v(False),
-                    v(2)),
-                l(
-                    v(True),
-                    v(3),),
-                l(
-                    v(True),
-                    v(4))))
+        tree = a_r(
+            a_c(
+                a_li(
+                    a_v(False),
+                    a_v(1)),
+                a_li(
+                    a_v(False),
+                    a_v(2)),
+                a_li(
+                    a_v(True),
+                    a_v(3),),
+                a_li(
+                    a_v(True),
+                    a_v(4))))
         self.assertEqual(interpreter2.interpret_ast(tree), types.Int((3,)))
 
     def test_condition_does_not_evaluate_following_true_branches(self):
@@ -420,15 +384,15 @@ class ConditionEvaluationTestCase(unittest.TestCase):
 
             def callback(self, *args):
                 self.called = True
-        tree = r(
-            c(
-                l(
-                    v(True),
-                    v(1)),
-                l(
-                    v(True),
-                    l(
-                        s('f')))))
+        tree = a_r(
+            a_c(
+                a_li(
+                    a_v(True),
+                    a_v(1)),
+                a_li(
+                    a_v(True),
+                    a_li(
+                        a_s('f')))))
 
         scope = scopes2.Scope()
         scope[types.Symbol(('f',))] = Callback()
@@ -451,3 +415,93 @@ class ConditionEvaluationTestCase(unittest.TestCase):
                     ast.Value((types.Bool((False,)),)))),))))
         result = interpreter2.interpret_ast(tree)
         self.assertEqual(result, types.Bool((False,)))
+
+
+class LambdasTestCase(unittest.TestCase):
+    def test_simple_lambda_without_parameters_gets_defined(self):
+        # (lambda () 1)
+        tree = a_r(
+            a_la(
+                a_li(),
+                a_v(1)))
+
+        expected_function = types.Function((
+            types.String(('lambda',)),
+            (),
+            ast.Value((types.Int((1,)),)),
+            scopes2.Scope(),
+        ))
+
+        actual_function = interpreter2.interpret_ast(tree)
+        self.assertEqual(actual_function, expected_function)
+
+    def test_simple_lambda_without_parameters_gets_executed(self):
+        # ((lambda () 1))
+        tree = a_r(
+            a_li(
+                a_la(
+                    a_li(),
+                    a_v(1))))
+        result = interpreter2.interpret_ast(tree)
+        self.assertEqual(result, types.Int((1,)))
+
+    def test_simple_lambda_with_parameters_gets_defined(self):
+        # (lambda (x y z) 1)
+        tree = a_r(
+            a_la(
+                a_li(
+                    a_s('x'),
+                    a_s('y'),
+                    a_s('z'),),
+                a_v(1)))
+
+        expected_function = types.Function((
+            types.String(('lambda',)),
+            (types.Symbol(('x',)),
+             types.Symbol(('y',)),
+             types.Symbol(('z',)),),
+            ast.Value((types.Int((1,)),)),
+            scopes2.Scope(),
+        ))
+        self.assertEqual(interpreter2.interpret_ast(tree), expected_function)
+
+    def test_simple_lambda_with_parameters_execution(self):
+        # ((lambda (a b c) 1))
+        tree = a_r(
+            a_li(
+                a_la(
+                    a_li(
+                        a_s('a'), a_s('b'), a_s('c')),
+                    a_v(1))))
+        result = interpreter2.interpret_ast(tree)
+
+        self.assertEqual(result, types.Int((1,)))
+
+    def test_nested_lambdas(self):
+        # (
+        #   (lambda (a b) (sum a b))
+        #   ((lambda (a b c) (sum a b c 1)) 2 4 8)
+        #   ((lambda (x a) (sum x a 16)) 32 64))
+        tree = a_r(
+            a_li(
+                a_la(
+                    a_li(
+                        a_s('a'), a_s('b')),
+                    a_li(
+                        a_s('sum'), a_s('a', ), a_s('b'))),
+                a_li(
+                    a_la(
+                        a_li(
+                            a_s('a'), a_s('b'), a_s('c')),
+                        a_li(
+                            a_s('sum'), a_s('a'), a_s('b'), a_s('c'), a_v(1),)),  # noqa
+                    a_v(2), a_v(4), a_v(8)),
+                a_li(
+                    a_la(
+                        a_li(
+                            a_s('x'), a_s('a')),
+                        a_li(
+                            a_s('sum'), a_s('x'), a_s('a'), a_v(16))),
+                    a_v(32), a_v(64))))
+        result = interpreter2.interpret_ast(tree)
+        self.assertEqual(result, types.Int((127,)))

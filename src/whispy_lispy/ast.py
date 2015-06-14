@@ -64,6 +64,12 @@ class Quote(Container):
         return '<Quote {}>'.format(self.values)
 
 
+class Lambda(Container):
+    """Represents the expression that creates a lambda function"""
+    def __repr__(self):
+        return '<Lambda at {}>'.format(id(self))
+
+
 class OperatorQuote(AbstractSyntaxNode):
     """Represents the quote operator ' """
     def __repr__(self):
@@ -148,6 +154,7 @@ class Condition(Container):
             cond_count=len(self.values),
             conditions=self.values
         )
+
 
 class List(Container):
     """The abstract list"""

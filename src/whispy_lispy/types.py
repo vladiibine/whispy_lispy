@@ -73,7 +73,7 @@ class Function(Type):
 
     Its values list must contain (on the given positions):
     0: the function name
-    1: the formal parameter names
+    1: the formal parameter names (a tuple)
     2: the AST that will get executed
     3: A Scope
 
@@ -83,9 +83,9 @@ class Function(Type):
         super(Function, self).__init__(*args, **kwrgs)
 
     def __repr__(self):
-        params = self.values[1]
+        params = '(' + ', '.join(val for val in self.values[1]) + ')'
         return '$[Func {name}{params} at {address}]'.format(
-            name=self.values[0], address=id(self), params=params)
+            name=self.values[0].values[0], address=id(self), params=params)
 
     @property
     def code(self):

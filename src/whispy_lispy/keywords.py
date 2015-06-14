@@ -5,8 +5,11 @@ from __future__ import unicode_literals as _ul
 __all__ = [elem for elem in dict(globals()) if elem.isupper()]
 
 DEFINITION = 'def'
+DEFINITION_ALIASES = ['def', 'define']
 
 CONDITION_ALIASES = ['cond', 'if']
+
+LAMBDA = 'lambda'
 
 OPERATOR_QUOTE = '\''
 

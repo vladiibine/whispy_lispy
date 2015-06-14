@@ -41,10 +41,12 @@ def determine_operation_type(cstree):
         if cstree.is_symbol():
             if cstree.symbol_equals(keywords.OPERATOR_QUOTE):
                 return ast.OperatorQuote
-            if cstree.symbol_equals(keywords.DEFINITION):
+            if cstree.symbol_in_iterable(keywords.DEFINITION_ALIASES):
                 return ast.Assign
             if cstree.symbol_in_iterable(keywords.CONDITION_ALIASES):
                 return ast.Condition
+            if cstree.symbol_equals(keywords.LAMBDA):
+                return ast.Lambda
             return ast.Symbol
 
 
@@ -148,4 +150,5 @@ def get_ast_from_cst(cstree):
     result = transform_quote_operator_into_function(result)
     result = pull_operations_up_inside_containers(result, ast.Assign)
     result = pull_operations_up_inside_containers(result, ast.Condition)
+    result = pull_operations_up_inside_containers(result, ast.Lambda)
     return result

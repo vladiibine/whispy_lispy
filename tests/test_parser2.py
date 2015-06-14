@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 import unittest
 
 from whispy_lispy import parser2, cst, ast, keywords, types
+from .constructors import (a_v, a_r, a_li, a_la, a_s)
 
 i = cst.IncrementNesting
 d = cst.DecrementNesting
@@ -243,4 +244,22 @@ class ConditionTestCase(unittest.TestCase):
                         ast.List((
                             ast.Value((types.Bool((False,)),)),
                             ast.Value((types.Int((2,)),)))),)))))),))
+        self.assertEqual(actual, expected)
+
+
+class LambdasTestCase(unittest.TestCase):
+    def test_simple_lambda_expression_evaluated(self):
+        # (lambda (x) 1)
+        actual = parser2.get_ast_from_cst(
+            cst.RootConcreteSyntaxnode((
+                cn((
+                    cn((keywords.LAMBDA,)),
+                    cn((
+                        cn(('x',)),)),
+                    cn((1,)))),)))
+        expected = a_r(
+            a_la(
+                a_li(
+                    a_s('x')),
+                a_v(1)))
         self.assertEqual(actual, expected)
