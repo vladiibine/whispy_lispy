@@ -16,8 +16,11 @@ def interpret_ast(astree, scope=None):
     if scope is None:
         scope = scopes2.Scope()
 
-    if astree.is_leaf() and not astree.is_root():
-        return interpret_leaf(astree, scope)
+    try:
+        if astree.is_leaf() and not astree.is_root():
+            return interpret_leaf(astree, scope)
+    except AttributeError:
+        raise
 
     if isinstance(astree, ast.List):
         return interpret_list(astree, scope)
@@ -45,7 +48,8 @@ def interpret_assign(astree, scope):
             types.String(astree[0].values[0].values),
             # the formal parameter names
             tuple([types.Symbol(elem.values) for elem in astree[0][1:]]),
-            astree[1]  # The AST that should be interpreted
+            astree[1],  # The AST that should be interpreted
+            scope
         ))
         scope[scope_key] = new_function
 
@@ -76,6 +80,6 @@ def interpret_list(astree, scope):
     :return:
     """
     func = scope[types.Symbol(astree[0].values)]
-    return func(
-        interpret_ast,
-        *[interpret_ast(val, scope) for val in astree.values[1:]])
+    result = func(interpret_ast, scope,
+                  *[interpret_ast(val, scope) for val in astree.values[1:]])
+    return result

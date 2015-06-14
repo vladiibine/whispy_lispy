@@ -75,10 +75,13 @@ class Function(Type):
     0: the function name
     1: the formal parameter names
     2: the AST that will get executed
-    3: The interpreter to interpret the AST - this is not so smart really
+    3: A Scope
 
     ...Stuff will get added here (like the closure scope)
     """
+    def __init__(self, *args, **kwrgs):
+        super(Function, self).__init__(*args, **kwrgs)
+
     def __repr__(self):
         params = self.values[1]
         return '$[Func {name}{params} at {address}]'.format(
@@ -92,12 +95,17 @@ class Function(Type):
     def params(self):
         return self.values[1]
 
-    def __call__(self, interpreter, *args):
+    @property
+    def scope(self):
+        return self.values[3]
+
+    def __call__(self, interpreter, scope, *args):
         """
         :param args: instances of the whispy_lispy.types classes
         """
         from whispy_lispy import scopes2
-        local_scope = scopes2.FunctionScope(self.params, args)
+        local_scope = scopes2.FunctionScope(
+            parent=scope, param_names=self.params, arguments=args)
 
         result = interpreter(self.code, local_scope)
 

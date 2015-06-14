@@ -88,7 +88,7 @@ class InterpreterTestCase(unittest.TestCase):
 
 class FunctionCreationTestCase(unittest.TestCase):
     def test_simple_function_returning_constant_is_created(self):
-        # (def (f) 1)
+        # (def (f) 45)
         # function that returns a constant
         tree = ast.RootAbstractSyntaxNode((
             ast.Assign((
@@ -96,12 +96,12 @@ class FunctionCreationTestCase(unittest.TestCase):
                 ast.Value((types.Int((45,)),)))),))
         scope = scopes2.Scope()
         interpreter2.interpret_ast(tree, scope)
-        self.assertEqual(
-            scope[types.Symbol(('f',))],
-            types.Function((
-                types.String(('f',)),
-                (),
-                ast.Value((types.Int((45,)),)))))
+
+        new_function = types.Function((
+            types.String(('f',)), (),
+            ast.Value((types.Int((45,)),)),
+            scope,))
+        self.assertEqual(scope[types.Symbol(('f',))], new_function)
 
     def test_simple_function_with_parameters_is_created(self):
         # (def (f a b) 16
@@ -120,7 +120,8 @@ class FunctionCreationTestCase(unittest.TestCase):
             types.Function((
                 types.String(('f',)),
                 (types.Symbol(('a',)), types.Symbol(('b',))),
-                ast.Value((types.Int((16,)),)),)))
+                ast.Value((types.Int((16,)),)),
+                scope)))
 
 
 class FunctionExecutionTestCase(unittest.TestCase):
@@ -160,3 +161,100 @@ class FunctionExecutionTestCase(unittest.TestCase):
         ))
         result = interpreter2.interpret_ast(tree)
         self.assertEqual(result, types.Int((33,)))
+
+    def test_function_calls_another_function(self):
+        # (def (f a b) (sum a b 3))
+        # (def (g x y) (sum (f x y) 4))
+        # (g 10 20)
+        tree = ast.RootAbstractSyntaxNode((
+            ast.Assign((
+                ast.List((
+                    ast.Symbol(('f',)),
+                    ast.Symbol(('a',)),
+                    ast.Symbol(('b',)),)),
+                ast.List((
+                    ast.Symbol(('sum',)),
+                    ast.Symbol(('a',)),
+                    ast.Symbol(('b',)),
+                    ast.Value((types.Int((3,)),)))),)),
+            ast.Assign((
+                ast.List((
+                    ast.Symbol(('g',)),
+                    ast.Symbol(('x',)),
+                    ast.Symbol(('y',)),)),
+                ast.List((
+                    ast.Symbol(('sum',)),
+                    ast.List((
+                        ast.Symbol(('f',)),
+                        ast.Symbol(('x',)),
+                        ast.Symbol(('y',)),)),
+                    ast.Value((types.Int((4,)),)))))),
+            ast.List((
+                ast.Symbol(('g',)),
+                ast.Value((types.Int((10,)),)),
+                ast.Value((types.Int((20,)),))))))
+
+        result = interpreter2.interpret_ast(tree)
+        self.assertEqual(result, types.Int((37,)))
+
+    def test_function_passes_arguments_to_another_function(self):
+        # (def (f a) (sum 1 a))
+        # (def (g b) (sum (f b) 3))
+        # (g 5)
+        tree = ast.RootAbstractSyntaxNode((
+            ast.Assign((
+                ast.List((
+                    ast.Symbol(('f',)),
+                    ast.Symbol(('a',)))),
+                ast.List((
+                    ast.Symbol(('sum',)),
+                    ast.Value((types.Int((1,)),)),
+                    ast.Symbol(('a',)))))),
+            ast.Assign((
+                ast.List((
+                    ast.Symbol(('g',)),
+                    ast.Symbol(('b',)))),
+                ast.List((
+                    ast.Symbol(('sum',)),
+                    ast.List((
+                        ast.Symbol(('f',)),
+                        ast.Symbol(('b',)))),
+                    ast.Value((types.Int((3,)),)))))),
+            ast.List((
+                ast.Symbol(('g',)),
+                ast.Value((types.Int((5,)),))))))
+        result = interpreter2.interpret_ast(tree)
+        self.assertEqual(result, types.Int((9,)))
+
+    def test_passing_arguments_with_the_same_name(self):
+        # (def (f a b) (sum a b))
+        # (def (g a b) (f a b))
+        # (g 1 2)
+        tree = ast.RootAbstractSyntaxNode((
+            ast.Assign((
+                ast.List((
+                    ast.Symbol(('f',)),
+                    ast.Symbol(('a',)),
+                    ast.Symbol(('b',)))),
+                ast.List((
+                    ast.Symbol(('sum',)),
+                    ast.Symbol(('a',)),
+                    ast.Symbol(('b',)))))),
+            ast.Assign((
+                ast.List((
+                    ast.Symbol(('g',)),
+                    ast.Symbol(('a',)),
+                    ast.Symbol(('b',)))),
+                ast.List((
+                    ast.Symbol(('f',)),
+                    ast.Symbol(('a',)),
+                    ast.Symbol(('b',)))))),
+            ast.List((
+                ast.Symbol(('g',)),
+                ast.Value((types.Int((1,)),)),
+                ast.Value((types.Int((2,)),)),
+            ))))
+
+        result = interpreter2.interpret_ast(tree)
+        self.assertEqual(result, types.Int((3,)))
+
