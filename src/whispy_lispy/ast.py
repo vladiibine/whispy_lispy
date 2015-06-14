@@ -79,7 +79,7 @@ class Symbol(AbstractSyntaxNode):
 class Value(AbstractSyntaxNode):
     """Superclass of all values"""
     def __repr__(self):
-        return '<Literal {}>'.format(self.values)
+        return '<Value {}>'.format(self.values)
 
 
 class Int(Value):

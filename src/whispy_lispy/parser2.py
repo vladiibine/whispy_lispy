@@ -9,7 +9,7 @@ from whispy_lispy import ast, keywords, types
 
 
 def literal_creator(internal_type):
-    """Generic ast.Literal creator.
+    """Generic ast.Value creator.
 
     :param internal_type: an whispy_lispy.types object
     :return:
