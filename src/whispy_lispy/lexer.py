@@ -32,15 +32,14 @@ SOURCE_PATTERNS = (
     # Matches escaped strings that can span multiple lines
     (make_token(str), re.compile(r'\".*?(?<!\\)\"', re.DOTALL)),
     # Match symbols and quotes
-    (make_token(str), re.compile('[a-zA-Z_]+|\'')),
+    (make_token(str), re.compile('[a-zA-Z_]+[0-9]*|\'')),
     (lambda _: cst.IncrementNesting, re.compile('\(')),
     (lambda _: cst.DecrementNesting, re.compile('\)')),
 )
 
 
 def get_flat_token_list(text):
-    """From the source file, create a flat list of tokens
-    """
+    """From the source file, create a flat list of tokens"""
     tokens = []
     remaining_text = text.lstrip()
 

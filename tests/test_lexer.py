@@ -185,3 +185,9 @@ class ConcreteSyntaxTreeTestCase(unittest.TestCase):
                 cst.ConcreteSyntaxNode((
                     cst.ConcreteSyntaxNode((1,)),)),)))
 
+    def test_alphanumeric_names(self):
+        self.assertEqual(
+            lexer.get_flat_token_list('f1'),
+            [cst.Token('f1')]
+        )
+
