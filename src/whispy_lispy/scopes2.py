@@ -98,12 +98,12 @@ class OmniPresentScope(dict):
 
         self[types.Symbol(('print',))] = lambda i, s, *args: print(*args)
 
-        def quit(*args):
+        def quit(interpreter, scope, *args):
             """Just quits and avoids funny values"""
             print('Thank you! Come again!')
             if args:
-                if isinstance(args[0], int):
-                    sys.exit(int(args[0]))
+                if isinstance(args[0], types.Int):
+                    sys.exit(int(internal_value_to_python_type(args[0])))
                 else:
                     print(args[0])
                     sys.exit(1)
