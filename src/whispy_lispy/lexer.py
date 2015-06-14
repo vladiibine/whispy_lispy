@@ -1,4 +1,10 @@
 # -*- coding utf-8 -*-
+"""
+Main functions: `get_concrete_syntax_tree` and `get_token_list`
+
+Call `get_concrete_syntax_tree` with the output of `get_token_list`
+Call `get_token_list` with simple text (string, unicode, whatever)
+"""
 from __future__ import unicode_literals, absolute_import, print_function
 import re
 import six

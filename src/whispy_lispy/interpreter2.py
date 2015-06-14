@@ -1,4 +1,8 @@
 # -*- coding utf-8 -*-
+"""
+Main function: `interpret_ast` - call it with the output from the parser
+function `get_ast_from_cst`
+"""
 from __future__ import unicode_literals, absolute_import
 
 from whispy_lispy import ast, types, scopes2

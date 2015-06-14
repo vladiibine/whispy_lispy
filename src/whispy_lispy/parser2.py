@@ -1,12 +1,7 @@
 # -*- coding utf-8 -*-
-"""New idea for the parser: Return a data structure that's actually the
-code itself (return a native nested list of function calls)
-
-Of course something like this:
-1 2 3
-...won't be evaluated like
-(1 2 3)
-because the top level list is special
+"""
+Main function: `get_ast_from_cst` - call it with the output of the lexer
+function `get_concrete_syntax_tree`
 """
 
 from __future__ import unicode_literals, absolute_import
