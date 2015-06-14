@@ -258,3 +258,28 @@ class FunctionExecutionTestCase(unittest.TestCase):
         result = interpreter2.interpret_ast(tree)
         self.assertEqual(result, types.Int((3,)))
 
+    def test_unconditional_recursion(self):
+        # Test methods (i.e. those named 'test_*' are treated differently
+        # by nose. So differently, that some runtime errors
+        # (like when too many recursions happen) can't get asserts on them
+        self.assertRaises(
+            RuntimeError,
+            self._test_unconditional_recursion_helper_because_pytest_sux,
+            )
+
+    def _test_unconditional_recursion_helper_because_pytest_sux(self):
+        # Not stackless yet, so raise error for infinite recursion
+        # (def (f x) (f x))
+        tree = ast.RootAbstractSyntaxNode((
+            ast.Assign((
+                ast.List((
+                    ast.Symbol(('f',)),
+                    ast.Symbol(('x',)),)),
+                ast.List((
+                    ast.Symbol(('f',)),
+                    ast.Symbol(('x',)),)))),
+            ast.List((
+                ast.Symbol(('f',)),
+                ast.Value((types.Int((3,)),)))),))
+
+        interpreter2.interpret_ast(tree)

@@ -120,14 +120,19 @@ class Scope(dict):
         :param dict parent: the parent scope
         """
         super(Scope, self).__init__()
-        self.parent = parent if parent else {}
+        self.parent = parent if parent is not None else {}
         self.omni = omni
 
     def __getitem__(self, item):
         if item in self:
             return super(Scope, self).__getitem__(item)
-        if item in self.parent:
-            return self.parent[item]
+
+        ancestor = getattr(self, 'parent', None)
+        while ancestor is not None:
+            if item in ancestor:
+                return ancestor[item]
+            ancestor = getattr(ancestor, 'parent', None)
+
         if item in self.omni:
             return self.omni[item]
 
@@ -137,6 +142,7 @@ class Scope(dict):
 
 
 class FunctionScope(Scope):
+    """Scope that looks for symbols among the formal parameters"""
     def __init__(self, param_names=None, arguments=None,
                  parent=None, omni=omni_scope):
         if param_names:
