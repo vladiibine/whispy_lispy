@@ -51,8 +51,8 @@ def create_node_type(value, node_cls):
         return node_cls((value,))
 
 t = cst.Token
-d = cst.DecrementNesting
-i = cst.IncrementNesting
+d = cst.DecrementNesting()
+i = cst.IncrementNesting()
 
 
 class FlatLexerTestCase(BaseLexerTestCase):
@@ -187,7 +187,12 @@ class ConcreteSyntaxTreeTestCase(unittest.TestCase):
 
     def test_alphanumeric_names(self):
         self.assertEqual(
-            lexer.get_flat_token_list('f1'),
-            [cst.Token('f1')]
+            lexer.get_flat_token_list('f1__a444_a'),
+            [cst.Token('f1__a444_a')]
         )
 
+    def test_weird_character_combinations(self):
+        self.assertRaises(
+            whispy_lispy.exceptions.WhispyLispySyntaxError,
+            lexer.get_flat_token_list,
+            'f1__a. 444_a')

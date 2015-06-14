@@ -18,10 +18,17 @@ class Token(object):
     Can represent a literal, operator, a name, or an atom.
     An atom is an ordered list of the previously mentioned elements
     """
-    __slots__ = ['value']
+    __slots__ = ['value', 'source', 'index']
 
-    def __init__(self, value):
+    def __init__(self, value, source=None, index=None):
+        """
+        :param value: the value of the token (python type)
+        :param str source: the source code
+        :param int index: the index of the token in the source code
+        """
         self.value = value
+        self.source = source
+        self.index = index
 
     def __repr__(self):
         return '<T {}>'.format(self.value)
@@ -125,10 +132,16 @@ class NestingCommand(Token):
     def __repr__(self):
         return '{}'.format(self.value[0])
 
+    def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            return False
+        return self.value == other.value
 
-IncrementNesting = NestingCommand(['<INC>'])
 
-DecrementNesting = NestingCommand(['<DEC>'])
+class IncrementNesting(NestingCommand):
+    def __init__(self, _=None, source=None, index=None):
+        super(IncrementNesting, self).__init__(['<INC>'], source, index)
 
-# No further use for the class
-del NestingCommand
+class DecrementNesting(NestingCommand):
+    def __init__(self, _=None, source=None, index=None):
+        super(DecrementNesting, self).__init__(['<DEC>'], source, index)

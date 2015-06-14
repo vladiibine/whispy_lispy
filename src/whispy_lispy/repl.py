@@ -63,7 +63,6 @@ def get_user_input(parens_count=0, inside_string=False):
     """
     # symbols that would continue the input on the next line
     text = unicode(raw_input())
-    import pydevd; pydevd.settrace()
     while True:
         for idx, char in enumerate(text):
             if char == '"':

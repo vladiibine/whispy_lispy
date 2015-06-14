@@ -49,6 +49,8 @@ def determine_operation_type(cstree):
                 return ast.Lambda
             return ast.Symbol
 
+    raise Exception("Couldn't determine the operation type... failing now.")
+
 
 def transform_quote_operator_into_function(tree, container_cls=ast.List):
     """Transform  (' a b ...) into  ((quote a) b ...) """
@@ -97,7 +99,11 @@ def transform_one_to_one(cstree,
     for value in cstree.values:
         if value.is_leaf():
             node_class = operation_determiner(value)
-            values.append(node_class(tuple(value.values)))
+            try:
+                values.append(node_class(tuple(value.values)))
+            except:
+                operation_determiner(value)
+                raise
         else:
             values.append(transform_one_to_one(value, operation_determiner))
     return operation_determiner(cstree)(tuple(values))

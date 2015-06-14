@@ -19,9 +19,10 @@ else:
     str = str
 
 
-def make_token(func):
-    def wrapper(value):
-        return cst.Token(func(value))
+def make_token(func, ntype=cst.Token):
+    def wrapper(value, source, index):
+        return ntype(func(value), source, index)
+
     return wrapper
 
 
@@ -32,9 +33,10 @@ SOURCE_PATTERNS = (
     # Matches escaped strings that can span multiple lines
     (make_token(str), re.compile(r'\".*?(?<!\\)\"', re.DOTALL)),
     # Match symbols and quotes
-    (make_token(str), re.compile('[a-zA-Z_]+[0-9]*|\'')),
-    (lambda _: cst.IncrementNesting, re.compile('\(')),
-    (lambda _: cst.DecrementNesting, re.compile('\)')),
+    (make_token(str), re.compile('[a-zA-Z_][a-zA-Z_0-9]*|\'')),
+    # (lambda _: cst.IncrementNesting, re.compile('\(')),
+    (make_token(lambda x: None, cst.IncrementNesting), re.compile('\(')),
+    (make_token(lambda x: None, cst.DecrementNesting), re.compile('\)')),
 )
 
 
@@ -42,14 +44,21 @@ def get_flat_token_list(text):
     """From the source file, create a flat list of tokens"""
     tokens = []
     remaining_text = text.lstrip()
+    last_iteration_text = remaining_text
 
     while remaining_text:
         for converter, pattern in SOURCE_PATTERNS:
             result = pattern.match(remaining_text)
             if result:
                 start, end = result.span()
-                tokens.append(converter(remaining_text[start:end]))
+                tokens.append(converter(
+                    remaining_text[start:end], text, text.index(remaining_text)))  # noqa
                 remaining_text = remaining_text[end:].lstrip()
+        if remaining_text == last_iteration_text:
+            raise WhispyLispySyntaxError(
+                text, text.index(remaining_text),
+                "Character combination doesn't make sense")
+        last_iteration_text = remaining_text
 
     return tokens
 
@@ -63,19 +72,23 @@ def get_concrete_syntax_tree(token_list):
     q = deque([[]])
 
     for token in token_list:
-        if token is cst.IncrementNesting:
+        if isinstance(token, cst.IncrementNesting):
             q.append([])
             continue
-        if token is cst.DecrementNesting:
+        if isinstance(token, cst.DecrementNesting):
             wrap_up = q.pop()
             try:
                 q[-1].append(cst.ConcreteSyntaxNode(tuple(wrap_up)))
             except IndexError:
-                raise WhispyLispySyntaxError('Too many closing parentheses')
+                raise WhispyLispySyntaxError(
+                    source=token.source, index=token.index,
+                    extra_info='Too many closing parentheses')
             continue
         q[-1].append(cst.ConcreteSyntaxNode((token.value,)))
 
     if len(q) > 1:
-        raise WhispyLispySyntaxError('Too many opening parentheses')
+        raise WhispyLispySyntaxError(
+            source=token.source, index=-1,
+            extra_info='Too many opening parentheses. Close some.')
 
     return cst.RootConcreteSyntaxnode(tuple(q[-1]))
