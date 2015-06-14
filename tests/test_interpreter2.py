@@ -283,3 +283,51 @@ class FunctionExecutionTestCase(unittest.TestCase):
                 ast.Value((types.Int((3,)),)))),))
 
         interpreter2.interpret_ast(tree)
+
+    def test_function_returns_function(self):
+        # (def (f) 1)
+        # (def (g) f)
+        # (g)
+        tree = ast.RootAbstractSyntaxNode((
+            ast.Assign((
+                ast.List((
+                    ast.Symbol(('f',)),)),
+                ast.Value((types.Int((1,)),)))),
+            ast.Assign((
+                ast.List((
+                    ast.Symbol(('g',)),)),
+                ast.Symbol(('f',)))),
+            ast.List((
+                ast.Symbol(('g',)),))))
+
+        scope = scopes2.Scope()
+        result = interpreter2.interpret_ast(tree, scope)
+        self.assertEqual(result, scope[types.Symbol(('f',))])
+
+    def test_dynamic_function_call(self):
+        # (def (f) 1)
+        # (def (g) f)
+        # (def (h) g)
+        # (((h)))
+        tree = ast.RootAbstractSyntaxNode((
+            ast.Assign((
+                ast.List((
+                    ast.Symbol(('f',)),)),
+                ast.Value((types.Int((1,)),)))),
+            ast.Assign((
+                ast.List((
+                    ast.Symbol(('g',)),)),
+                ast.Symbol(('f',)))),
+            ast.Assign((
+                ast.List((
+                    ast.Symbol(('h',)),)),
+                ast.Symbol(('g',)))),
+            ast.List(((
+                ast.List((
+                    ast.List((
+                        ast.Symbol(('h',)),)),)),)))))
+
+        scope = scopes2.Scope()
+        result = interpreter2.interpret_ast(tree, scope)
+
+        self.assertEqual(result, types.Int((1,)))

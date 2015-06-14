@@ -79,7 +79,23 @@ def interpret_list(astree, scope):
     :param scope:
     :return:
     """
-    func = scope[types.Symbol(astree[0].values)]
+    try:
+        # func = scope[types.Symbol(obtain_symbol(astree[0].values))]
+        func = obtain_function(astree[0], scope)
+    except:
+        raise
     result = func(interpret_ast, scope,
                   *[interpret_ast(val, scope) for val in astree.values[1:]])
     return result
+
+
+def obtain_function(astree, scope):
+    """
+    :param ast.AbstractSyntaxNode astree: a symbol, or expression evaluating to
+        a function
+    :rtype: types.Function
+    """
+    if isinstance(astree, ast.Symbol):
+        return scope[types.Symbol((astree[0],))]
+    elif isinstance(astree, ast.List):
+        return interpret_ast(astree, scope)
