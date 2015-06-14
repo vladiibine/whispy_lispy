@@ -134,6 +134,21 @@ class Assign(AbstractSyntaxNode):
         return '<Assign {} := {} >'.format(self.values[0], self.values[1])
 
 
+class Condition(Container):
+    """The condition node
+    (cond
+        (condition1 result1)
+        (condition2 result2)
+        ...
+        (#t fallback_result)
+    )
+    """
+    def __repr__(self):
+        return '<Cond X {cond_count}: {conditions}>'.format(
+            cond_count=len(self.values),
+            conditions=self.values
+        )
+
 class List(Container):
     """The abstract list"""
     def __repr__(self):

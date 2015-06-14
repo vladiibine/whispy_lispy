@@ -213,3 +213,34 @@ class ParserAssignmentTestCase(unittest.TestCase):
                             ast.Symbol(('v',)))),
                         ast.Value((types.Int((87,)),)))),)))),))
         self.assertEqual(actual, expected)
+
+
+class ConditionTestCase(unittest.TestCase):
+    def test_nested_condition_with_every_alias_is_parsed(self):
+        # (cond (#f 1) (#t (if (#f 2))))
+        actual = parser2.get_ast_from_cst(
+            cst.RootConcreteSyntaxnode((
+                cn((
+                    cn(('cond',)),
+                    cn((
+                        cn((False,)),
+                        cn((1,)))),
+                    cn((
+                        cn((True,)),
+                        cn((
+                            cn(('if',)),
+                            cn((
+                                cn((False,)),
+                                cn((2,)))))))))),)))
+        expected = ast.RootAbstractSyntaxNode((
+            ast.Condition((
+                ast.List((
+                    ast.Value((types.Bool((False,)),)),
+                    ast.Value((types.Int((1,)),)))),
+                ast.List((
+                    ast.Value((types.Bool((True,)),)),
+                    ast.Condition((
+                        ast.List((
+                            ast.Value((types.Bool((False,)),)),
+                            ast.Value((types.Int((2,)),)))),)))))),))
+        self.assertEqual(actual, expected)

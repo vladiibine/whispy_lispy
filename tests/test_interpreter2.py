@@ -1,9 +1,46 @@
 # -*- coding utf-8 -*-
 from __future__ import unicode_literals, absolute_import
 
+import six
 import unittest
 from whispy_lispy import interpreter2, ast, types, scopes2
 
+
+def r(value):
+    """Return a RootAbstractSyntaxNode"""
+    return any_node(value, ast.RootAbstractSyntaxNode)
+
+def v(value):
+    """Return an ast.Value(types.<Proper type>(value))"""
+    return ast.Value((
+        {bool: types.Bool,
+         int: types.Int,
+         float: types.Float,
+         six.string_types: types.String
+         }.get(type(value))((value,)),))
+
+def s(value):
+    """Return an ast.Symbol"""
+    return any_node(value, ast.Symbol)
+
+
+def any_node(value, ntype):
+    """Create the provided node type"""
+    if isinstance(value, (tuple, list)):
+        return ntype(tuple(value))
+    return ntype((value,))
+
+def l(*values):
+    """Return an ast.List"""
+    return any_node(values, ast.List)
+
+def a(value):
+    """Return an assignment"""
+    return any_node(value, ast.Assign)
+
+def c(*values):
+    """Return a condition"""
+    return any_node(values, ast.Condition)
 
 class InterpreterTestCase(unittest.TestCase):
     def test_return_native_int(self):
@@ -331,3 +368,86 @@ class FunctionExecutionTestCase(unittest.TestCase):
         result = interpreter2.interpret_ast(tree, scope)
 
         self.assertEqual(result, types.Int((1,)))
+
+
+class ConditionEvaluationTestCase(unittest.TestCase):
+    def test_simple_condition_is_true(self):
+        # (cond (#t "yes"))
+        tree = ast.RootAbstractSyntaxNode((
+            ast.Condition((
+                ast.List((
+                    ast.Value((types.Bool((True,)),)),
+                    ast.Value((types.String(("yes",)),)))),)),))
+        result = interpreter2.interpret_ast(tree)
+        self.assertEqual(result, types.String(("yes",)))
+
+    def test_condition_with_false_branch(self):
+        # (cond (#f 1)(#t 3.1))
+        tree = ast.RootAbstractSyntaxNode((
+            ast.Condition((
+                ast.List((
+                    ast.Value((types.Bool((False,)),)),
+                    ast.Value((types.Int((1,)),)),)),
+                ast.List((
+                    ast.Value((types.Bool((True,)),)),
+                    ast.Value((types.Float((3.1,)),)))))),))
+        result = interpreter2.interpret_ast(tree)
+        self.assertEqual(result, types.Float((3.1,)))
+
+    def test_condition_returns_first_true_branch(self):
+        # (cond (#f 1) (#f 2) (#t 3) ($t 4))
+        tree = r(
+            c(
+                l(
+                    v(False),
+                    v(1)),
+                l(
+                    v(False),
+                    v(2)),
+                l(
+                    v(True),
+                    v(3),),
+                l(
+                    v(True),
+                    v(4))))
+        self.assertEqual(interpreter2.interpret_ast(tree), types.Int((3,)))
+
+    def test_condition_does_not_evaluate_following_true_branches(self):
+        # f - will be a function injected into the scope, as a callback
+        # (cond (#t 1) (#t (f)))
+        class Callback(object):
+            called = False
+
+            def callback(self, *args):
+                self.called = True
+        tree = r(
+            c(
+                l(
+                    v(True),
+                    v(1)),
+                l(
+                    v(True),
+                    l(
+                        s('f')))))
+
+        scope = scopes2.Scope()
+        scope[types.Symbol(('f',))] = Callback()
+
+        interpreter2.interpret_ast(tree, scope)
+        self.assertFalse(scope[types.Symbol(('f',))].called)
+
+    def test_simple_dynamic_condition(self):
+        # (def (f) #t)
+        # (cond ((f) #f))
+        tree = ast.RootAbstractSyntaxNode((
+            ast.Assign((
+                ast.List((
+                    ast.Symbol(('f',)),)),
+                ast.Value((types.Bool((True,)),)))),
+            ast.Condition((
+                ast.List((
+                    ast.List((
+                        ast.Symbol(('f',)),)),
+                    ast.Value((types.Bool((False,)),)))),))))
+        result = interpreter2.interpret_ast(tree)
+        self.assertEqual(result, types.Bool((False,)))

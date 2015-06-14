@@ -15,6 +15,8 @@ from whispy_lispy import cst
 
 if six.PY2:
     str = unicode
+else:
+    str = str
 
 
 def make_token(func):

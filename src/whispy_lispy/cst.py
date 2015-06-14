@@ -108,6 +108,12 @@ class ConcreteSyntaxNode(object):
             raise CSTError('Node is not a symbol')
         return self.values[0] == param
 
+    def symbol_in_iterable(self, iterable):
+        for elem in iterable:
+            if self.symbol_equals(elem):
+                return True
+        return False
+
 
 class RootConcreteSyntaxnode(ConcreteSyntaxNode):
     def __repr__(self):

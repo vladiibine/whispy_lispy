@@ -30,10 +30,20 @@ def interpret_ast(astree, scope=None):
     if isinstance(astree, ast.Assign):
         return interpret_assign(astree, scope)
 
+    if isinstance(astree, ast.Condition):
+        return interpret_condition(astree, scope)
+
     for elem in astree.values:
         result = interpret_ast(elem, scope)
 
     return result
+
+
+def interpret_condition(astree, scope):
+    for value in astree.values:
+        condition = value[0]
+        if interpret_ast(condition, scope) == types.Bool((True,)):
+            return interpret_ast(value[1], scope)
 
 
 def interpret_assign(astree, scope):

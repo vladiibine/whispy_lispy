@@ -6,6 +6,8 @@ __all__ = [elem for elem in dict(globals()) if elem.isupper()]
 
 DEFINITION = 'def'
 
+CONDITION_ALIASES = ['cond', 'if']
+
 OPERATOR_QUOTE = '\''
 
 BUILTIN_QUOTE_FUNC = 'quote'

@@ -8,11 +8,11 @@ from __future__ import unicode_literals, absolute_import
 from whispy_lispy import ast, keywords, types
 
 
-def literal_creator(internal_type):
+def internal_value_creator(internal_type):
     """Generic ast.Value creator.
 
     :param internal_type: an whispy_lispy.types object
-    :return:
+    :return: a whispy_lispy.types.Value instance, wrapping the proper type
     """
     def wrapper(values):
         return ast.Value(tuple([internal_type(values)]))
@@ -21,6 +21,8 @@ def literal_creator(internal_type):
 
 def determine_operation_type(cstree):
     """Determine the type of the new node
+
+    :param whispy_lispy.cst.ConcreteSyntaxNode cstree: the CSTree
     """
     if cstree.is_root():
         return ast.RootAbstractSyntaxNode
@@ -29,18 +31,20 @@ def determine_operation_type(cstree):
         return ast.List
     else:
         if cstree.is_string():
-            return literal_creator(types.String.from_quoted_values)
+            return internal_value_creator(types.String.from_quoted_values)
         if cstree.is_bool():
-            return literal_creator(types.Bool)
+            return internal_value_creator(types.Bool)
         if cstree.is_int():
-            return literal_creator(types.Int)
+            return internal_value_creator(types.Int)
         if cstree.is_float():
-            return literal_creator(types.Float)
+            return internal_value_creator(types.Float)
         if cstree.is_symbol():
             if cstree.symbol_equals(keywords.OPERATOR_QUOTE):
                 return ast.OperatorQuote
             if cstree.symbol_equals(keywords.DEFINITION):
                 return ast.Assign
+            if cstree.symbol_in_iterable(keywords.CONDITION_ALIASES):
+                return ast.Condition
             return ast.Symbol
 
 
@@ -97,38 +101,38 @@ def transform_one_to_one(cstree,
     return operation_determiner(cstree)(tuple(values))
 
 
-def create_proper_assignment_nodes(astree):
-    """Creates Assignment nodes
+def pull_operations_up_inside_containers(astree, astype):
+    """Returns a new astree, with a modified structure.
 
-    This is important, because the assignment operation is more lower level
-    than a function call. Otherwise, we'd have problems with expressions like
-    `(define (f x) 1)`. This would try to evaluate (f x) before the definition
-    took place.
+    Can be user to create any nodes which are represented in the CST
+    as:
+        Container:
+            - Child: <desired_operation>
+            - ...parameters*
 
-    Previously:
-        Node: List
-          - Child: Symbol 'def'
-          - ...Children
-
-    After this transformation:
-        Node: Assign
-          - ...Children
+    ... and in the AST as:
+        <Desired_Operation>
+            - ...parameters*
 
     :param ast.AbstractSyntaxNode astree: the tree to start with
+    :param type astype: The type that's being pulled up
     :rtype: ast.AbstractSyntaxNode
     """
     if not isinstance(astree, ast.Container):
         return astree
 
-    if isinstance(astree[0], ast.Assign):
+    if not astree.values:
+        return astree
+
+    if isinstance(astree[0], astype):
         values = []
         for child in astree.values[1:]:
-            values.append(create_proper_assignment_nodes(child))
-        return ast.Assign(tuple(values))
+            values.append(pull_operations_up_inside_containers(child, astype))
+        return astype(tuple(values))
 
     values = []
     for child in astree.values:
-        values.append(create_proper_assignment_nodes(child))
+        values.append(pull_operations_up_inside_containers(child, astype))
 
     return astree.alike(tuple(values))
 
@@ -142,38 +146,6 @@ def get_ast_from_cst(cstree):
 
     # Here, all the operators should be transformed to function calls
     result = transform_quote_operator_into_function(result)
-    result = create_proper_assignment_nodes(result)
+    result = pull_operations_up_inside_containers(result, ast.Assign)
+    result = pull_operations_up_inside_containers(result, ast.Condition)
     return result
-
-
-AST_TO_SIMPLE_INTERNAL_TYPES_MAP = {
-    ast.Int: types.Int,
-    ast.Float: types.Float,
-    ast.String: types.String,
-    ast.Bool: types.Bool,
-    ast.Symbol: types.Symbol
-}
-
-AST_NESTED_TYPES_TO_INTERNAL_TYPES_MAP = {
-    ast.List: types.List,
-    ast.RootAbstractSyntaxNode: tuple
-}
-
-
-def get_native_types_from_ast(astree):
-    """Return the abstract syntax tree translated to the internal types
-
-    :param ast.AbstractSyntaxNode astree: an AST
-    :rtype: tuple[types.Type] | types.Type
-    """
-    new_values = []
-
-    new_simple_type = AST_TO_SIMPLE_INTERNAL_TYPES_MAP.get(type(astree))
-    if new_simple_type is not None:
-        return new_simple_type(astree.values)
-
-    new_nested_type = AST_NESTED_TYPES_TO_INTERNAL_TYPES_MAP.get(type(astree))
-    if new_nested_type:
-        for child in astree.values:
-            new_values.append(get_native_types_from_ast(child))
-        return new_nested_type(tuple(new_values))
