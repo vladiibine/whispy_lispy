@@ -22,7 +22,7 @@ def main(argv=()):
     if argv[1] == '-r':
         repl.repl()
     else:
-        skip_steps.interpret_text(argv[1])
+        skip_steps.interpret_text2(argv[1])
     return 0
 
 if __name__ == "__main__":
