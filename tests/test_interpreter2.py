@@ -395,10 +395,11 @@ class ConditionEvaluationTestCase(unittest.TestCase):
                         a_s('f')))))
 
         scope = scopes2.Scope()
-        scope[types.Symbol(('f',))] = Callback()
+        callback = Callback()
+        scope[types.Symbol(('f',))] = callback.callback
 
         interpreter2.interpret_ast(tree, scope)
-        self.assertFalse(scope[types.Symbol(('f',))].called)
+        self.assertFalse(callback.called)
 
     def test_simple_dynamic_condition(self):
         # (def (f) #t)
