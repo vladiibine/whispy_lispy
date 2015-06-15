@@ -68,7 +68,7 @@ def interpret_assign(astree, scope):
 
 def create_function(astree, scope, is_lambda=False):
     # For a normal definition, the first node in the list is the function name
-    # For a lambda, the list starts with the arguments
+    # For a lambda, the list starts with the arguments straight away
     start_idx = 0 if is_lambda else 1
 
     params = tuple(
@@ -76,7 +76,7 @@ def create_function(astree, scope, is_lambda=False):
 
     return types.Function((
         # the function name
-        types.String(astree[0].values[0].values if not is_lambda else ('lambda',)),  # noqa
+        types.String(astree[0][0].values if not is_lambda else ('lambda',)),
         # the formal parameter names
         params,
         astree[1],  # The AST that should be interpreted

@@ -4,7 +4,7 @@ import six
 from whispy_lispy import ast, types
 
 
-def a_r(value):
+def a_r(*value):
     """Return a RootAbstractSyntaxNode"""
     return _any_node(value, ast.RootAbstractSyntaxNode)
 
@@ -41,7 +41,7 @@ def a_la(*values):
     return _any_node(values, ast.Lambda)
 
 
-def a_a(value):
+def a_a(*value):
     """Return an assignment"""
     return _any_node(value, ast.Assign)
 
@@ -49,3 +49,13 @@ def a_a(value):
 def a_c(*values):
     """Return a condition"""
     return _any_node(values, ast.Condition)
+
+
+def t_s(*values):
+    """Return a types.Symbol node"""
+    return _any_node(values, types.Symbol)
+
+
+def t_i(*values):
+    """return a types.Int node"""
+    return _any_node(values, types.Int)

@@ -83,9 +83,9 @@ class Function(Type):
         super(Function, self).__init__(*args, **kwrgs)
 
     def __repr__(self):
-        params = '(' + ', '.join(val for val in self.values[1]) + ')'
+        params = '(' + ', '.join(str(val.values[0]) for val in self.values[1]) + ')'
         return '$[Func {name}{params} at {address}]'.format(
-            name=self.values[0].values[0], address=id(self), params=params)
+            name=self.name, address=id(self), params=params)
 
     @property
     def code(self):
@@ -99,13 +99,18 @@ class Function(Type):
     def scope(self):
         return self.values[3]
 
+    @property
+    def name(self):
+        return self.values[0].values[0]
+
     def __call__(self, interpreter, scope, *args):
         """
         :param args: instances of the whispy_lispy.types classes
         """
         from whispy_lispy import scopes2
         local_scope = scopes2.FunctionScope(
-            parent=scope, param_names=self.params, arguments=args)
+            parent=scope, param_names=self.params,
+            arguments=args, closure_scope=self.scope)
 
         result = interpreter(self.code, local_scope)
 

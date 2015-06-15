@@ -28,7 +28,7 @@ def internal_value_to_python_type(value):
     return value.values[0]
 
 
-class OmniPresentScope(dict):
+class OmniPresentScope(object):
     """Provides the builtin functions that are included in all scopes
 
     Provided functions:
@@ -39,6 +39,8 @@ class OmniPresentScope(dict):
     quit -> quits the session (
     """
     def __init__(self):
+        self.vals = {}
+
         # The sum function sums numbers
         def internal_sum(interpreter, scope, *nums):
             """
@@ -57,7 +59,7 @@ class OmniPresentScope(dict):
             except:
                 raise
 
-        self[types.Symbol(('sum',))] = internal_sum
+        self.vals[types.Symbol(('sum',))] = internal_sum
 
         def internal_sub(interpreter, scope, *nums):
             return python_value_to_internal_type(
@@ -65,7 +67,7 @@ class OmniPresentScope(dict):
                        [internal_value_to_python_type(interpreter(val, scope))
                         for val in nums])
             )
-        self[types.Symbol(('sub',))] = internal_sub
+        self.vals[types.Symbol(('sub',))] = internal_sub
 
         def get_input(interpreter, scope):
             """
@@ -94,9 +96,9 @@ class OmniPresentScope(dict):
                 result = '"{}"'.format(user_input)
             return python_value_to_internal_type(result)
 
-        self[types.Symbol(('simple_input',))] = get_input
+        self.vals[types.Symbol(('simple_input',))] = get_input
 
-        self[types.Symbol(('print',))] = lambda i, s, *args: print(*args)
+        self.vals[types.Symbol(('print',))] = lambda i, s, *args: print(*args)
 
         def quit(interpreter, scope, *args):
             """Just quits and avoids funny values"""
@@ -109,29 +111,34 @@ class OmniPresentScope(dict):
                     sys.exit(1)
             sys.exit()
 
-        self[types.Symbol(('quit',))] = quit
+        self.vals[types.Symbol(('quit',))] = quit
+
+    def __getitem__(self, item):
+        return self.vals[item]
+
+    def __contains__(self, item):
+        return item in self.vals
 
 omni_scope = OmniPresentScope()
 
 
-class Scope(dict):
+class Scope(object):
     def __init__(self, parent=None, omni=omni_scope):
         """
-        :param dict parent: the parent scope
+        :param dict | Scope parent: the parent scope
         """
-        super(Scope, self).__init__()
+        self.vals = {}
         self.parent = parent if parent is not None else {}
         self.omni = omni
 
     def __getitem__(self, item):
-        if item in self:
-            return super(Scope, self).__getitem__(item)
+        if item in self.vals:
+            return self.vals[item]
 
-        ancestor = getattr(self, 'parent', None)
-        while ancestor is not None:
-            if item in ancestor:
-                return ancestor[item]
-            ancestor = getattr(ancestor, 'parent', None)
+        try:
+            return self.parent[item]
+        except KeyError:
+            pass
 
         if item in self.omni:
             return self.omni[item]
@@ -140,11 +147,23 @@ class Scope(dict):
             'Symbol "{}" can\'t be found in scope'.format(item)
         )
 
+    def __contains__(self, item):
+        return (item in self.vals or
+                item in self.parent or
+                item in self.omni)
+
+    def __setitem__(self, key, value):
+        self.vals[key] = value
+
 
 class FunctionScope(Scope):
-    """Scope that looks for symbols among the formal parameters"""
+    """Scope that looks for symbols among the formal parameters and in
+    the closure scope
+    """
     def __init__(self, param_names=None, arguments=None,
-                 parent=None, omni=omni_scope):
+                 parent=None, closure_scope=None, omni=omni_scope):
+
+        self.closure_scope = closure_scope or {}
         if param_names:
             self.local_scope = dict(zip(param_names, arguments))
         else:
@@ -154,4 +173,12 @@ class FunctionScope(Scope):
     def __getitem__(self, item):
         if item in self.local_scope:
             return self.local_scope[item]
+        if item in self.closure_scope:
+            return self.closure_scope[item]
         return super(FunctionScope, self).__getitem__(item)
+
+    def __contains__(self, item):
+        if item in self.closure_scope or item in self.local_scope:
+            return True
+
+        return super(FunctionScope, self).__contains__(item)
