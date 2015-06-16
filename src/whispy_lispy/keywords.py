@@ -1,8 +1,13 @@
 # -*- coding utf-8 -*-
-from __future__ import unicode_literals as _ul
+from __future__ import unicode_literals
 
 # export all constants in this module
 __all__ = [elem for elem in dict(globals()) if elem.isupper()]
+
+OPERATORS = [
+    '+', '-', '*', '**', '%', '/', '//', '>', '>=', '<', '<=', '=', '==', '<<',
+    '>>', '!=', '&', '|', '^', '~', 'and', 'or', 'xor', 'not', 'eqv'
+]
 
 DEFINITION = 'def'
 DEFINITION_ALIASES = ['def', 'define']

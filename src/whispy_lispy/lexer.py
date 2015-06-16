@@ -19,9 +19,19 @@ else:
     str = str
 
 
-def make_token(func, ntype=cst.Token):
+def make_token(func, node_type=cst.Token):
+    """
+    :param func: function to convert the found string into something else
+    :param node_type: the type of the node to be created
+    """
     def wrapper(value, source, index):
-        return ntype(func(value), source, index)
+        """
+        :param str value: a string from the source code that matched a pattern
+        :param str source: the source code containing the value
+        :param int index: the index of `value` in `source`
+        :return: an instance of `node_type`, wrapping what `func` provided
+        """
+        return node_type(func(value), source, index)
 
     return wrapper
 
@@ -34,9 +44,12 @@ SOURCE_PATTERNS = (
     (make_token(str), re.compile(r'\".*?(?<!\\)\"', re.DOTALL)),
     # Match symbols and quotes
     (make_token(str), re.compile('[a-zA-Z_][a-zA-Z_0-9]*|\'')),
-    # (lambda _: cst.IncrementNesting, re.compile('\(')),
+    # The parentheses
     (make_token(lambda x: None, cst.IncrementNesting), re.compile('\(')),
     (make_token(lambda x: None, cst.DecrementNesting), re.compile('\)')),
+    # The operators
+    (make_token(str, cst.Operator), re.compile(
+        r'[\+\-\|&^~%]|[\*\\/=]{1,2}|[<>]=?|<<|>>|!='))
 )
 
 
@@ -107,7 +120,8 @@ def get_concrete_syntax_tree(token_list):
                     source=token.source, index=token.index,
                     extra_info='Too many closing parentheses')
             continue
-        q[-1].append(cst.ConcreteSyntaxNode((token.value,)))
+        q[-1].append(cst.ConcreteSyntaxNode(
+            (token.value,), isinstance(token, cst.Operator)))
 
     if len(q) > 1:
         raise WhispyLispySyntaxError(

@@ -9,8 +9,10 @@ import six
 
 from whispy_lispy import keywords
 
+
 class CSTError(Exception):
     pass
+
 
 class Token(object):
     """Concrete syntax tree node.
@@ -40,14 +42,24 @@ class Token(object):
             return False
         return self.value == other.value
 
+
+class Operator(Token):
+    """Lexer knows already that a pattern is an operator"""
+    def __init__(self, *args, **kwargs):
+        super(Operator, self).__init__(*args, **kwargs)
+
+    def __repr__(self):
+        return '<Op {}>'.format(self.value)
+
+
 class ConcreteSyntaxNode(object):
     """A node in the concrete syntax tree.
 
     The state of this node is kept as a tuple
     """
-    __slots__ = ['values']
+    __slots__ = ['values', '_operator']
 
-    def __init__(self, values):
+    def __init__(self, values, is_operator=False):
         """
         The tuple either contains other nodes, or values. Not both!
         :type values: tuple
@@ -60,6 +72,7 @@ class ConcreteSyntaxNode(object):
                 .format(len(types), values)
             )
         self.values = values
+        self._operator = is_operator
 
     def __eq__(self, other):
         if other is None:
@@ -70,6 +83,9 @@ class ConcreteSyntaxNode(object):
 
     def __repr__(self):
         return '<cN {}>'.format(self.values)
+
+    def is_operator(self):
+        return self._operator
 
     def is_root(self):
         return isinstance(self, RootConcreteSyntaxnode)
@@ -126,6 +142,7 @@ class RootConcreteSyntaxnode(ConcreteSyntaxNode):
     def __repr__(self):
         return '<RcN {}>'.format(self.values)
 
+
 class NestingCommand(Token):
     """Represents a command to either increment or decrement the tree level
     """
@@ -141,6 +158,7 @@ class NestingCommand(Token):
 class IncrementNesting(NestingCommand):
     def __init__(self, _=None, source=None, index=None):
         super(IncrementNesting, self).__init__(['<INC>'], source, index)
+
 
 class DecrementNesting(NestingCommand):
     def __init__(self, _=None, source=None, index=None):

@@ -38,6 +38,8 @@ def determine_operation_type(cstree):
             return internal_value_creator(types.Int)
         if cstree.is_float():
             return internal_value_creator(types.Float)
+        if cstree.is_operator():
+            return ast.Operator
         if cstree.is_symbol():
             if cstree.symbol_equals(keywords.OPERATOR_QUOTE):
                 return ast.OperatorQuote

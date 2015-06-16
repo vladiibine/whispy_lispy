@@ -6,26 +6,11 @@ import sys
 import six
 from operator import sub
 
-from whispy_lispy import exceptions, types
+from whispy_lispy import exceptions, types, operations
 
 if six.PY3:
     raw_input = input
     from functools import reduce
-
-
-def python_value_to_internal_type(value):
-    if isinstance(value, int):
-        return types.Int((value,))
-    elif isinstance(value, float):
-        return types.Float((value,))
-    elif isinstance(value, bool):
-        return types.Bool((value,))
-    elif isinstance(value, six.string_types):
-        return types.String.from_quoted_values(value)
-
-
-def internal_value_to_python_type(value):
-    return value.values[0]
 
 
 class OmniPresentScope(object):
@@ -39,79 +24,12 @@ class OmniPresentScope(object):
     quit -> quits the session (
     """
     def __init__(self):
-        self.vals = {}
-
-        # The sum function sums numbers
-        def internal_sum(interpreter, scope, *nums):
-            """
-            :param interpreter: the interpreter2.interpret_ast function or
-                something that interprets the *nums list
-            :param scope: a scope (usually dict)
-            :param nums: internal numbers to add
-            :return:
-            """
-            try:
-                return python_value_to_internal_type(
-                    sum(
-                        internal_value_to_python_type(interpreter(num, scope))
-                        for num in nums)
-                )
-            except:
-                raise
-
-        self.vals[types.Symbol(('sum',))] = internal_sum
-
-        def internal_sub(interpreter, scope, *nums):
-            return python_value_to_internal_type(
-                reduce(sub,
-                       [internal_value_to_python_type(interpreter(val, scope))
-                        for val in nums])
-            )
-        self.vals[types.Symbol(('sub',))] = internal_sub
-
-        def get_input(interpreter, scope):
-            """
-            :rtype: str| float | int | bool | None
-            """
-            # Hardcode the message, because we don't have strings yet
-            user_input = raw_input('input: ')
-
-            # float?
-            if '.' in user_input:
-                try:
-                    return types.Float((float(user_input),))
-                except ValueError:
-                    pass
-            # int?
-            try:
-                return types.Int((int(user_input),))
-            except ValueError:
-                pass
-
-            # bool?
-            result = (True if user_input == '#t' else
-                      False if user_input == '#f' else None)
-            # string?
-            if result is None:
-                result = '"{}"'.format(user_input)
-            return python_value_to_internal_type(result)
-
-        self.vals[types.Symbol(('simple_input',))] = get_input
-
-        self.vals[types.Symbol(('print',))] = lambda i, s, *args: print(*args)
-
-        def quit(interpreter, scope, *args):
-            """Just quits and avoids funny values"""
-            print('Thank you! Come again!')
-            if args:
-                if isinstance(args[0], types.Int):
-                    sys.exit(int(internal_value_to_python_type(args[0])))
-                else:
-                    print(args[0])
-                    sys.exit(1)
-            sys.exit()
-
-        self.vals[types.Symbol(('quit',))] = quit
+        self.vals = {
+            types.Symbol(('sum',)): operations.internal_sum,
+            types.Symbol(('sub',)): operations.internal_sub,
+            types.Symbol(('simple_input',)): operations.get_input,
+            types.Symbol(('print',)): operations.builtin_print,
+            types.Symbol(('quit',)): operations.operation_quit}
 
     def __getitem__(self, item):
         return self.vals[item]

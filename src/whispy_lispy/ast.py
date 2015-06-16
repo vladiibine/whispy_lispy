@@ -160,3 +160,9 @@ class List(Container):
     """The abstract list"""
     def __repr__(self):
         return '<List :{}>'.format(self.values)
+
+
+class Operator(Container):
+    """Represents any one of the operators"""
+    def __repr__(self):
+        return '<Operator {}>'.format(self.values)
