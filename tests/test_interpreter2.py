@@ -4,7 +4,8 @@ from __future__ import unicode_literals, absolute_import
 import unittest
 from whispy_lispy import interpreter2, ast, types, scopes2
 
-from .constructors import (a_c, a_li, a_r, a_s, a_v, a_la, a_a, t_s, t_i)
+from .constructors import (a_c, a_li, a_r, a_s, a_v, a_la, a_a, t_s)
+
 
 class InterpreterTestCase(unittest.TestCase):
     def test_return_native_int(self):

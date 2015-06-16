@@ -14,7 +14,7 @@ PS3 = '(WL):'
 GREETING = '------<Welcome to the Whispy Lispy interpreter!>------'
 
 
-def repl():
+def repl(non_lispy_sytax=False):
     """Main REPL loop"""
     print(GREETING)
     scope = scopes2.Scope()
@@ -23,7 +23,8 @@ def repl():
             print(PS1, end=' ')
             text = get_user_input()
             try:
-                result = skip_steps.interpret_text2(text, scope)
+                result = skip_steps.interpret_text2(
+                    text, scope, non_lispy_sytax)
                 print(PS3, result, end='\n\n')
             except exceptions.BaseWhispyLispyError as err:
                 print(err, end='\n\n')

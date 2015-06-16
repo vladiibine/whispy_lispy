@@ -63,6 +63,29 @@ def get_flat_token_list(text):
     return tokens
 
 
+def make_parentheses_lispy(token_list):
+    """When we decide to use the call style `func(args)` instead of
+    `(func args)`, we'll use this function to seamlessly convert the syntax
+    into proper lispy syntax
+
+    :param list[cst.Token] token_list:
+    :rtype: list[cst.Token]
+    """
+    # a(b((c d(((e f f(g h))))))) -> (a (b (c (d ( (e f (f g h)))))))
+    new_tokens = []
+    for i, token in enumerate(token_list[:-1]):
+        if not isinstance(token, cst.NestingCommand):
+            next_token = token_list[i + 1]
+            if isinstance(next_token, cst.IncrementNesting):
+                new_tokens.extend([next_token, token])
+
+        if token not in new_tokens:
+            new_tokens.append(token)
+    new_tokens.append(token_list[-1])
+
+    return new_tokens
+
+
 def get_concrete_syntax_tree(token_list):
     """Return a "concrete" syntax tree from the flat token list
 

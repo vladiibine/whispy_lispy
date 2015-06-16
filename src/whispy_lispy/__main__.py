@@ -19,10 +19,11 @@ def main(argv=()):
 
     Does stuff.
     """
-    if argv[1] == '-r':
-        repl.repl()
+    non_lispy_syntax = '-n' in argv
+    if '-r' in argv:
+        repl.repl(non_lispy_syntax)
     else:
-        skip_steps.interpret_text2(argv[1])
+        skip_steps.interpret_text2(argv[1], non_lispy_syntax=non_lispy_syntax)
     return 0
 
 if __name__ == "__main__":
