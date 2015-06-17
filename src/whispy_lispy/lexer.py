@@ -60,6 +60,7 @@ def get_flat_token_list(text):
     last_iteration_text = remaining_text
 
     while remaining_text:
+        import pydevd; pydevd.settrace()
         for converter, pattern in SOURCE_PATTERNS:
             result = pattern.match(remaining_text)
             if result:

@@ -4,6 +4,7 @@ import unittest
 
 from whispy_lispy import lexer
 from whispy_lispy import cst
+from ..constructors import *
 import whispy_lispy.exceptions
 
 
@@ -196,3 +197,9 @@ class ConcreteSyntaxTreeTestCase(unittest.TestCase):
             whispy_lispy.exceptions.WhispyLispySyntaxError,
             lexer.get_flat_token_list,
             'f1__a. 444_a')
+
+    def test_not_so_weird_character_combination(self):
+        self.assertEqual(
+            lexer.get_flat_token_list('1.1 1.1 1.1 1.1'),
+            [t_f(1.1), t_f(1.1), t_f(1.1), ]
+        )

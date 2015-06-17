@@ -11,38 +11,59 @@ import operator
 from whispy_lispy import keywords, types
 
 
-def python_value_to_internal_type(value):
+def to_python(value):
+    """Converts Whispy Lispy types to python types """
+    if isinstance(value, bool):
+        return types.Bool((value,))
     if isinstance(value, int):
         return types.Int((value,))
-    elif isinstance(value, float):
+    if isinstance(value, float):
         return types.Float((value,))
-    elif isinstance(value, bool):
-        return types.Bool((value,))
-    elif isinstance(value, six.string_types):
+    if isinstance(value, six.string_types):
         return types.String.from_quoted_values(value)
 
 
-def internal_value_to_python_type(value):
+def to_internal(value):
+    """Converts Python types to Whispy Lispy types"""
     return value.values[0]
+
+VALUE_SELF_REFERENCE = object()
+NO_DEFAULT_VALUE = object()
 
 
 class Operator(object):
-    def default_value(self, *args):
-        pass
+    """Template for creating Whispy Lispy operations from Python operators
 
-    def __call__(self, interpreter, scope, *args):
-        pass
+    Operators in Python don't work exactly as their intended analogues in
+    Whispy Lispy. For instance `reduce(operators.eq, ["asdf"]` will return
+    "asdf" in python.
 
+    We'd like this to return True in Whispy Lispy, because this operation
+    is reflective (don't know if that's a word)
+    For the same reason, the '>' operation applied to only one value should
+    always return False. In Python it again returns the value
+    """
+    def __init__(self, operator_, default_value=VALUE_SELF_REFERENCE):
+        """
+        :param operator_: a python operator from module operator.*
+        :param default_value: a value to be used as the default for this
+        operator
+        """
 
-class Equal(Operator):
+        self.operator = operator_
+        self.default = default_value
+
     def __call__(self, interpreter, scope, *values):
-        try:
-            return python_value_to_internal_type(
-                reduce(operator.eq,
-                       (internal_value_to_python_type(interpreter(val, scope))
-                        for val in values)))
-        except:
-            raise
+        if self.default is VALUE_SELF_REFERENCE:
+            # The list can't be empty. Should have blown up at the AST
+            values += (values[0],)
+        elif self.default is not NO_DEFAULT_VALUE:
+            values += (self.default,)
+
+        return to_python(
+            reduce(
+                self.operator,
+                (to_internal(interpreter(val, scope)) for val in values)))
 
 
 def internal_sum(interpreter, scope, *nums):
@@ -54,9 +75,9 @@ def internal_sum(interpreter, scope, *nums):
     :return:
     """
     try:
-        return python_value_to_internal_type(
+        return to_python(
             sum(
-                internal_value_to_python_type(interpreter(num, scope))
+                to_internal(interpreter(num, scope))
                 for num in nums)
         )
     except:
@@ -64,14 +85,14 @@ def internal_sum(interpreter, scope, *nums):
 
 
 def internal_sub(interpreter, scope, *nums):
-    return python_value_to_internal_type(
+    return to_python(
         reduce(operator.sub,
-               [internal_value_to_python_type(interpreter(val, scope))
+               [to_internal(interpreter(val, scope))
                 for val in nums])
     )
 
 
-def get_input(interpreter, scope):
+def get_input(interpreter, scope, *values):
     """
     :rtype: str| float | int | bool | None
     """
@@ -96,7 +117,7 @@ def get_input(interpreter, scope):
     # string?
     if result is None:
         result = '"{}"'.format(user_input)
-    return python_value_to_internal_type(result)
+    return to_python(result)
 
 
 builtin_print = lambda i, s, *args: print(*args)
@@ -107,12 +128,12 @@ def operation_quit(interpreter, scope, *args):
     print('Thank you! Come again!')
     if args:
         if isinstance(args[0], types.Int):
-            sys.exit(int(internal_value_to_python_type(args[0])))
+            sys.exit(int(to_internal(args[0])))
         else:
             print(args[0])
             sys.exit(1)
     sys.exit()
 
 
-OPERATIONS = zip(
-    keywords.OPERATORS, [None] * 11 + [Equal()] + [None] * 13)
+OPERATIONS = dict(zip(
+    keywords.OPERATORS, [None] * 11 + [Operator(operator.eq)] + [None] * 13))

@@ -51,6 +51,11 @@ def a_c(*values):
     return _any_node(values, ast.Condition)
 
 
+def a_o(*values):
+    """Return an AST operator"""
+    return _any_node(values, ast.Operator)
+
+
 def t_s(*values):
     """Return a types.Symbol node"""
     return _any_node(values, types.Symbol)
@@ -59,3 +64,11 @@ def t_s(*values):
 def t_i(*values):
     """return a types.Int node"""
     return _any_node(values, types.Int)
+
+
+def t_b(*values):
+    """return a types.Bool node"""
+    return _any_node(values, types.Bool)
+
+def t_f(*values):
+    return _any_node(values, types.Float)

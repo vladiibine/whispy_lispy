@@ -5,7 +5,7 @@ function `get_ast_from_cst`
 """
 from __future__ import unicode_literals, absolute_import
 
-from whispy_lispy import ast, types, scopes2
+from whispy_lispy import ast, types, scopes2, operations
 
 
 def interpret_ast(astree, scope=None):
@@ -40,6 +40,10 @@ def interpret_ast(astree, scope=None):
         result = interpret_ast(elem, scope)
 
     return result
+
+
+def interpret_operator(astree):
+    return operations.OPERATIONS.get(astree[0])
 
 
 def interpret_lambda(astree, scope):
@@ -110,6 +114,8 @@ def obtain_function(astree, scope):
         a function
     :rtype: types.Function
     """
+    if isinstance(astree, ast.Operator):
+        return operations.OPERATIONS[astree[0]]
     if isinstance(astree, ast.Symbol):
         return scope[types.Symbol((astree[0],))]
     elif isinstance(astree, ast.Container):

@@ -4,7 +4,7 @@ from __future__ import unicode_literals, absolute_import
 import unittest
 from whispy_lispy import interpreter2, ast, types, scopes2
 
-from .constructors import (a_c, a_li, a_r, a_s, a_v, a_la, a_a, t_s)
+from .constructors import *
 
 
 class InterpreterTestCase(unittest.TestCase):
@@ -559,3 +559,22 @@ class LambdasTestCase(unittest.TestCase):
         result = interpreter2.interpret_ast(tree, scope)
 
         self.assertEqual(result, types.Int((7,)))
+
+
+class OperatorsTestCase(unittest.TestCase):
+    def test_operator_equal_one_parameter(self):
+        # (= 9)
+        tree = a_r(
+            a_li(
+                a_o('='),
+                a_v(9)))
+        self.assertEqual(interpreter2.interpret_ast(tree), t_b(True))
+
+    def test_operator_equal_multiple_parameter(self):
+        # (= 1 1 1 1 1)
+        tree = a_r(
+            a_li(
+                a_o('='),
+                a_v(1), a_v(1), a_v(1), a_v(1), a_v(1),
+            ))
+        self.assertEqual(interpreter2.interpret_ast(tree), t_b(True))
