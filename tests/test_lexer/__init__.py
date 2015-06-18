@@ -201,5 +201,5 @@ class ConcreteSyntaxTreeTestCase(unittest.TestCase):
     def test_not_so_weird_character_combination(self):
         self.assertEqual(
             lexer.get_flat_token_list('1.1 1.1 1.1 1.1'),
-            [t_f(1.1), t_f(1.1), t_f(1.1), ]
+            [cst.Token(1.1), cst.Token(1.1), cst.Token(1.1), cst.Token(1.1)]
         )

@@ -27,7 +27,10 @@ def to_internal(value):
     """Converts Python types to Whispy Lispy types"""
     return value.values[0]
 
+# Many operators can be unary, so (<operator> single_value) will succeed
+# This value means that the unary operator will compare the object to itself
 VALUE_SELF_REFERENCE = object()
+# This value means that the operator is not unary
 NO_DEFAULT_VALUE = object()
 
 

@@ -60,7 +60,6 @@ def get_flat_token_list(text):
     last_iteration_text = remaining_text
 
     while remaining_text:
-        import pydevd; pydevd.settrace()
         for converter, pattern in SOURCE_PATTERNS:
             result = pattern.match(remaining_text)
             if result:
@@ -68,6 +67,7 @@ def get_flat_token_list(text):
                 tokens.append(converter(
                     remaining_text[start:end], text, text.index(remaining_text)))  # noqa
                 remaining_text = remaining_text[end:].lstrip()
+                break
         if remaining_text == last_iteration_text:
             raise WhispyLispySyntaxError(
                 text, text.index(remaining_text),
