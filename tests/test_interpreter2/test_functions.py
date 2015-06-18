@@ -2,6 +2,7 @@
 from __future__ import absolute_import, unicode_literals
 import unittest
 from whispy_lispy import ast, types, scopes2, interpreter2
+from ..constructors import *
 
 
 class FunctionCreationTestCase(unittest.TestCase):
@@ -249,3 +250,35 @@ class FunctionExecutionTestCase(unittest.TestCase):
         result = interpreter2.interpret_ast(tree, scope)
 
         self.assertEqual(result, types.Int((1,)))
+
+    def test_recursive_evaluation_of_factorial(self):
+        # (def (fact n) (cond ((= n 1) 1) (#t (* n (fact (sub n 1)))))))
+        # (fact 5)
+        tree = a_r(
+            a_a(
+                a_li(
+                    a_s('fact'),
+                    a_s('n')),
+                a_c(
+                    a_li(
+                        a_li(
+                            a_o('='),
+                            a_s('n'),
+                            a_v(1)),
+                        a_v(1)),
+                    a_li(
+                        a_v(True),
+                        a_li(
+                            a_o('*'),
+                            a_s('n'),
+                            a_li(
+                                a_s('fact'),
+                                a_li(
+                                    a_s('sub'),
+                                    a_s('n'),
+                                    a_v(1))))))),
+            a_li(
+                a_s('fact'),
+                a_v(5)))
+
+        self.assertEqual(interpreter2.interpret_ast(tree), t_i(120))

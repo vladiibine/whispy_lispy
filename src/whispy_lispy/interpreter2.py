@@ -103,8 +103,11 @@ def interpret_list(astree, scope):
     :return:
     """
     func = obtain_function(astree[0], scope)
-    result = func(interpret_ast, scope,
-                  *[interpret_ast(val, scope) for val in astree.values[1:]])
+    try:
+        result = func(interpret_ast, scope,
+                      *[interpret_ast(val, scope) for val in astree.values[1:]])
+    except:
+        raise
     return result
 
 

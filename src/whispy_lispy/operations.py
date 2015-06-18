@@ -38,6 +38,9 @@ VALUE_SELF_REFERENCE = object()
 # This defines the neutral values for addition
 ADDITION_NEUTRAL_VALUES = {
     int: 0, float: 0.0, unicode: '', bool: True}
+MULTIPLICATION_NEUTRAL_VALUES = {
+    int: 1, float: 1, unicode: 1, bool: True
+}
 # This value means that the operator is not unary
 NO_DEFAULT_VALUE = object()
 
@@ -68,47 +71,46 @@ class Operator(object):
             and returns True if they can't be considered compatible in the
             context of this operator
         """
-        self.type_fallbacks = type_fallbacks
+        self.type_fallbacks = dict(type_fallbacks)
         self.operator = operator_
         self.defaults_dict = default_value
         self.incompatible_types_check = incompatible_types
 
     def __call__(self, interpreter, scope, *values):
-        if self.defaults_dict is VALUE_SELF_REFERENCE:
-            # The list can't be empty. Should have blown up at the AST
-            processable_values = values + (values[0],)
-        elif self.defaults_dict is not NO_DEFAULT_VALUE:
-            processable_values = values + (
-                to_internal(
-                    self.defaults_dict[type(to_python(values[0]))]),)
-        else:
-            processable_values = values
+        processable_values = self.get_values_with_defaults(values)
 
         iter_for_type_check, iter_for_reduce = itertools.tee(
             to_python(interpreter(val, scope)) for val in processable_values)
 
-        types = set(type(item) for item in iter_for_type_check)
-        # Addition specific logic - should extract it to method(maybe reusable)
-        if len(types) > 1:
-            if types != {int, float}:
-                raise exceptions.EvaluationError(
-                    'Incompatible types: {}'.format(processable_values)
-                )
+        types_ = set(type(item) for item in iter_for_type_check)
 
-        # TODO - extract this logic nicely
-        # if self.incompatible_types_check(types):
-        #     raise exceptions.EvaluationError(
-        #         'Incompatible types: {}'.format(processable_values)
-        #     )
+        if self.incompatible_types_check(types_):
+            raise exceptions.EvaluationError(
+                'Incompatible types: {}'.format(processable_values)
+            )
 
-        # Generic logic - can stay
-        values_type = types.pop()
+        values_type = types_.pop()
         if values_type in self.type_fallbacks:
             return OPERATIONS[self.type_fallbacks[values_type]](interpreter,
                                                                 scope, *values)
 
         return to_internal(
             reduce(self.operator, iter_for_reduce))
+
+    def get_values_with_defaults(self, values):
+        if self.defaults_dict is VALUE_SELF_REFERENCE:
+            # The list can't be empty. Should have blown up at the AST
+            if len(values) == 1:
+                processable_values = values + (values[0],)
+            else:
+                processable_values = values
+        elif self.defaults_dict is not NO_DEFAULT_VALUE:
+            processable_values = values + (
+                to_internal(
+                    self.defaults_dict[type(to_python(values[0]))]),)
+        else:
+            processable_values = values
+        return processable_values
 
 
 def internal_sum(interpreter, scope, *nums):
@@ -180,14 +182,29 @@ def operation_quit(interpreter, scope, *args):
     sys.exit()
 
 
+def _incompatible_all_except_int_with_float(types_):
+    return types_ != {float, int} and len(types_) > 1
+
 OPERATIONS = dict(zip(
     keywords.OPERATORS,
-    [Operator(
-        operator.add,
-        ADDITION_NEUTRAL_VALUES,
-        {bool: 'or'},
-    )] +
-    [None] * 10 +
+    [
+        Operator(  # Operator +
+                   operator_=operator.add,
+                   default_value=ADDITION_NEUTRAL_VALUES,
+                   type_fallbacks={bool: 'or'},
+                   incompatible_types=_incompatible_all_except_int_with_float
+        )
+    ] +
+    [None]+
+    [
+        Operator(
+            operator_=operator.mul,
+            default_value=MULTIPLICATION_NEUTRAL_VALUES,
+            type_fallbacks={bool: 'and'},
+            incompatible_types=_incompatible_all_except_int_with_float
+        )
+    ] +
+    [None] * 8 +
     [Operator(operator.eq)] +
     [None] * 9 +
     [Operator(operator.or_)] +

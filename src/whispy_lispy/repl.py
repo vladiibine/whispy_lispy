@@ -22,7 +22,6 @@ def repl(non_lispy_sytax=False):
         try:
             print(PS1, end=' ')
             text = get_user_input()
-            import pydevd; pydevd.settrace()
             try:
                 result = skip_steps.interpret_text2(
                     text, scope, non_lispy_sytax)
