@@ -3,6 +3,11 @@ from __future__ import absolute_import, unicode_literals
 import six
 from whispy_lispy import ast, types
 
+if six.PY2:
+    str = unicode
+else:
+    unicode = str
+
 
 def a_r(*value):
     """Return a RootAbstractSyntaxNode"""
@@ -15,7 +20,7 @@ def a_v(value):
         {bool: types.Bool,
          int: types.Int,
          float: types.Float,
-         six.string_types: types.String
+         unicode: types.String
          }.get(type(value))((value,)),))
 
 
@@ -72,3 +77,6 @@ def t_b(*values):
 
 def t_f(*values):
     return _any_node(values, types.Float)
+
+def t_str(*values):
+    return _any_node(values, types.String)
