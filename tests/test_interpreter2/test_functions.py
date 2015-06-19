@@ -11,7 +11,7 @@ class FunctionCreationTestCase(unittest.TestCase):
         # function that returns a constant
         tree = ast.RootAbstractSyntaxNode((
             ast.Assign((
-                ast.List((ast.Symbol(('f',)),)),
+                ast.Apply((ast.Symbol(('f',)),)),
                 ast.Value((types.Int((45,)),)))),))
         scope = scopes2.Scope()
         interpreter2.interpret_ast(tree, scope)
@@ -26,7 +26,7 @@ class FunctionCreationTestCase(unittest.TestCase):
         # (def (f a b) 16
         tree = ast.RootAbstractSyntaxNode((
             ast.Assign((
-                ast.List((
+                ast.Apply((
                     ast.Symbol(('f',)),
                     ast.Symbol(('a',)),
                     ast.Symbol(('b',))
@@ -49,10 +49,10 @@ class FunctionExecutionTestCase(unittest.TestCase):
         # (f)
         tree = ast.RootAbstractSyntaxNode((
             ast.Assign((
-                ast.List((
+                ast.Apply((
                     ast.Symbol(('f',)),)),
                 ast.Value((types.Int((1,)),)))),
-            ast.List((ast.Symbol(('f',)),))
+            ast.Apply((ast.Symbol(('f',)),))
         ))
         result = interpreter2.interpret_ast(tree)
 
@@ -63,16 +63,16 @@ class FunctionExecutionTestCase(unittest.TestCase):
         # (f 11 22)
         tree = ast.RootAbstractSyntaxNode((
             ast.Assign((
-                ast.List((
+                ast.Apply((
                     ast.Symbol(('f',)),
                     ast.Symbol(('a',)),
                     ast.Symbol(('b',))
                 )),
-                ast.List((
+                ast.Apply((
                     ast.Symbol(('sum',)),
                     ast.Symbol(('a',)),
                     ast.Symbol(('b',)),)))),
-            ast.List((
+            ast.Apply((
                 ast.Symbol(('f',)),
                 ast.Value((types.Int((11,)),)),
                 ast.Value((types.Int((22,)),))
@@ -87,28 +87,28 @@ class FunctionExecutionTestCase(unittest.TestCase):
         # (g 10 20)
         tree = ast.RootAbstractSyntaxNode((
             ast.Assign((
-                ast.List((
+                ast.Apply((
                     ast.Symbol(('f',)),
                     ast.Symbol(('a',)),
                     ast.Symbol(('b',)),)),
-                ast.List((
+                ast.Apply((
                     ast.Symbol(('sum',)),
                     ast.Symbol(('a',)),
                     ast.Symbol(('b',)),
                     ast.Value((types.Int((3,)),)))),)),
             ast.Assign((
-                ast.List((
+                ast.Apply((
                     ast.Symbol(('g',)),
                     ast.Symbol(('x',)),
                     ast.Symbol(('y',)),)),
-                ast.List((
+                ast.Apply((
                     ast.Symbol(('sum',)),
-                    ast.List((
+                    ast.Apply((
                         ast.Symbol(('f',)),
                         ast.Symbol(('x',)),
                         ast.Symbol(('y',)),)),
                     ast.Value((types.Int((4,)),)))))),
-            ast.List((
+            ast.Apply((
                 ast.Symbol(('g',)),
                 ast.Value((types.Int((10,)),)),
                 ast.Value((types.Int((20,)),))))))
@@ -122,24 +122,24 @@ class FunctionExecutionTestCase(unittest.TestCase):
         # (g 5)
         tree = ast.RootAbstractSyntaxNode((
             ast.Assign((
-                ast.List((
+                ast.Apply((
                     ast.Symbol(('f',)),
                     ast.Symbol(('a',)))),
-                ast.List((
+                ast.Apply((
                     ast.Symbol(('sum',)),
                     ast.Value((types.Int((1,)),)),
                     ast.Symbol(('a',)))))),
             ast.Assign((
-                ast.List((
+                ast.Apply((
                     ast.Symbol(('g',)),
                     ast.Symbol(('b',)))),
-                ast.List((
+                ast.Apply((
                     ast.Symbol(('sum',)),
-                    ast.List((
+                    ast.Apply((
                         ast.Symbol(('f',)),
                         ast.Symbol(('b',)))),
                     ast.Value((types.Int((3,)),)))))),
-            ast.List((
+            ast.Apply((
                 ast.Symbol(('g',)),
                 ast.Value((types.Int((5,)),))))))
         result = interpreter2.interpret_ast(tree)
@@ -151,24 +151,24 @@ class FunctionExecutionTestCase(unittest.TestCase):
         # (g 1 2)
         tree = ast.RootAbstractSyntaxNode((
             ast.Assign((
-                ast.List((
+                ast.Apply((
                     ast.Symbol(('f',)),
                     ast.Symbol(('a',)),
                     ast.Symbol(('b',)))),
-                ast.List((
+                ast.Apply((
                     ast.Symbol(('sum',)),
                     ast.Symbol(('a',)),
                     ast.Symbol(('b',)))))),
             ast.Assign((
-                ast.List((
+                ast.Apply((
                     ast.Symbol(('g',)),
                     ast.Symbol(('a',)),
                     ast.Symbol(('b',)))),
-                ast.List((
+                ast.Apply((
                     ast.Symbol(('f',)),
                     ast.Symbol(('a',)),
                     ast.Symbol(('b',)))))),
-            ast.List((
+            ast.Apply((
                 ast.Symbol(('g',)),
                 ast.Value((types.Int((1,)),)),
                 ast.Value((types.Int((2,)),)),
@@ -191,13 +191,13 @@ class FunctionExecutionTestCase(unittest.TestCase):
         # (def (f x) (f x))
         tree = ast.RootAbstractSyntaxNode((
             ast.Assign((
-                ast.List((
+                ast.Apply((
                     ast.Symbol(('f',)),
                     ast.Symbol(('x',)),)),
-                ast.List((
+                ast.Apply((
                     ast.Symbol(('f',)),
                     ast.Symbol(('x',)),)))),
-            ast.List((
+            ast.Apply((
                 ast.Symbol(('f',)),
                 ast.Value((types.Int((3,)),)))),))
 
@@ -209,14 +209,14 @@ class FunctionExecutionTestCase(unittest.TestCase):
         # (g)
         tree = ast.RootAbstractSyntaxNode((
             ast.Assign((
-                ast.List((
+                ast.Apply((
                     ast.Symbol(('f',)),)),
                 ast.Value((types.Int((1,)),)))),
             ast.Assign((
-                ast.List((
+                ast.Apply((
                     ast.Symbol(('g',)),)),
                 ast.Symbol(('f',)))),
-            ast.List((
+            ast.Apply((
                 ast.Symbol(('g',)),))))
 
         scope = scopes2.Scope()
@@ -230,20 +230,20 @@ class FunctionExecutionTestCase(unittest.TestCase):
         # (((h)))
         tree = ast.RootAbstractSyntaxNode((
             ast.Assign((
-                ast.List((
+                ast.Apply((
                     ast.Symbol(('f',)),)),
                 ast.Value((types.Int((1,)),)))),
             ast.Assign((
-                ast.List((
+                ast.Apply((
                     ast.Symbol(('g',)),)),
                 ast.Symbol(('f',)))),
             ast.Assign((
-                ast.List((
+                ast.Apply((
                     ast.Symbol(('h',)),)),
                 ast.Symbol(('g',)))),
-            ast.List(((
-                ast.List((
-                    ast.List((
+            ast.Apply(((
+                ast.Apply((
+                    ast.Apply((
                         ast.Symbol(('h',)),)),)),)))))
 
         scope = scopes2.Scope()

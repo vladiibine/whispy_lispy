@@ -7,8 +7,6 @@ Lexer should return tokens that are instances of classes found here
 from __future__ import unicode_literals
 import six
 
-from whispy_lispy import keywords
-
 
 class CSTError(Exception):
     pass

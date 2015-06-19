@@ -28,7 +28,7 @@ def determine_operation_type(cstree):
         return ast.RootAbstractSyntaxNode
 
     if not cstree.is_leaf():
-        return ast.List
+        return ast.Apply
     else:
         if cstree.is_string():
             return internal_value_creator(types.String.from_quoted_values)
@@ -42,7 +42,7 @@ def determine_operation_type(cstree):
             return ast.Operator
         if cstree.is_symbol():
             if cstree.symbol_equals(keywords.OPERATOR_QUOTE):
-                return ast.OperatorQuote
+                return ast.QuoteShorthand
             if cstree.symbol_in_iterable(keywords.DEFINITION_ALIASES):
                 return ast.Assign
             if cstree.symbol_in_iterable(keywords.CONDITION_ALIASES):
@@ -54,7 +54,7 @@ def determine_operation_type(cstree):
     raise Exception("Couldn't determine the operation type... failing now.")
 
 
-def transform_quote_operator_into_function(tree, container_cls=ast.List):
+def transform_quote_operator_into_function(tree, container_cls=ast.Apply):
     """Transform  (' a b ...) into  ((quote a) b ...) """
     if tree.is_leaf():
         return tree
@@ -70,7 +70,7 @@ def transform_quote_operator_into_function(tree, container_cls=ast.List):
         # better idea - scheme assumes an 'object' is the last thing in
         # the list. Do this transformation somewhere... should it perhaps be
         # a property of the list?
-        if isinstance(child, ast.OperatorQuote):
+        if isinstance(child, ast.QuoteShorthand):
             skip_next = True
             new_children.append(
                 container_cls((

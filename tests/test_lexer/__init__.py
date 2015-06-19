@@ -203,3 +203,43 @@ class ConcreteSyntaxTreeTestCase(unittest.TestCase):
             lexer.get_flat_token_list('1.1 1.1 1.1 1.1'),
             [cst.Token(1.1), cst.Token(1.1), cst.Token(1.1), cst.Token(1.1)]
         )
+
+    # Created to fix a bug
+    def test_factorial_cst(self):
+        text = """(def
+                       (fact n)
+                       (cond
+                           ((= n 1) 1)
+                           (
+                               #t
+                               ( * n
+                                   (fact (sub n 1)) ) ) ) )"""
+        actual_cst = lexer.get_concrete_syntax_tree(lexer.get_flat_token_list(text))
+
+        expected_cst = c_r(
+            c_n(
+                c_n('def'),
+                c_n(
+                    c_n('fact'),
+                    c_n('n')),
+                c_n(
+                    c_n('cond'),
+                    c_n(
+                        c_n(
+                            c_n('='),
+                            c_n('n'),
+                            c_n(1)),
+                        c_n(1)),
+                    c_n(
+                        c_n(True),
+                        c_n(
+                            c_n('*'),
+                            c_n('n'),
+                            c_n(
+                                c_n('fact'),
+                                c_n(
+                                    c_n('sub'),
+                                    c_n('n'),
+                                    c_n(1))))))))
+        # import pydevd; pydevd.settrace('172.16.67.219')
+        self.assertEqual(actual_cst, expected_cst)

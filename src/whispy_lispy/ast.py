@@ -52,25 +52,13 @@ class RootAbstractSyntaxNode(Container):
         return '<RaN {}>'.format(self.values)
 
 
-class Apply(Container):
-    """Abstract apply"""
-    def __repr__(self):
-        return '<Apply {}>'.format(self.values)
-
-
-class Quote(Container):
-    """Abstract quote"""
-    def __repr__(self):
-        return '<Quote {}>'.format(self.values)
-
-
 class Lambda(Container):
     """Represents the expression that creates a lambda function"""
     def __repr__(self):
         return '<Lambda at {}>'.format(id(self))
 
 
-class OperatorQuote(AbstractSyntaxNode):
+class QuoteShorthand(AbstractSyntaxNode):
     """Represents the quote operator ' """
     def __repr__(self):
         return '<QuoteOP>'
@@ -112,7 +100,7 @@ class String(Value):
         return '<{}>'.format(self.values[0])
 
 
-class Assign(AbstractSyntaxNode):
+class Assign(Container):
     """Represent the assignment of a value to a symbol
 
     Syntax: `(def A B)`
@@ -156,7 +144,7 @@ class Condition(Container):
         )
 
 
-class List(Container):
+class Apply(Container):
     """The abstract list"""
     def __repr__(self):
         return '<List :{}>'.format(self.values)

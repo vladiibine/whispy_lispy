@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
 import six
-from whispy_lispy import ast, types
+from whispy_lispy import ast, types, cst, keywords
 
 if six.PY2:
     str = unicode
@@ -38,7 +38,7 @@ def _any_node(value, ntype):
 
 def a_li(*values):
     """Return an ast.List"""
-    return _any_node(values, ast.List)
+    return _any_node(values, ast.Apply)
 
 
 def a_la(*values):
@@ -80,3 +80,15 @@ def t_f(*values):
 
 def t_str(*values):
     return _any_node(values, types.String)
+
+
+def c_n(*values):
+    """Return a Concrete Syntax node"""
+    is_operator = values[0] in keywords.OPERATORS
+
+    return cst.ConcreteSyntaxNode(values, is_operator)
+
+
+def c_r(*values):
+    """Return a Root concrete syntax tree"""
+    return _any_node(values, cst.RootConcreteSyntaxnode)

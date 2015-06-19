@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 import unittest
 
 from whispy_lispy import parser2, cst, ast, keywords, types
-from .constructors import (a_v, a_r, a_li, a_la, a_s)
+from .constructors import *
 
 i = cst.IncrementNesting
 d = cst.DecrementNesting
@@ -23,7 +23,7 @@ class Parser2TestCase(unittest.TestCase):
 
         self.assertEqual(
             result,
-            ast.RootAbstractSyntaxNode((ast.List((ast.Symbol(('a',)),)),)))
+            ast.RootAbstractSyntaxNode((ast.Apply((ast.Symbol(('a',)),)),)))
 
     def test_transform_simple_quote_operator_into_function(self):
         # 'a
@@ -33,7 +33,7 @@ class Parser2TestCase(unittest.TestCase):
         self.assertEqual(
             result,
             ast.RootAbstractSyntaxNode((
-                ast.List((ast.Symbol((keywords.BUILTIN_QUOTE_FUNC,)),
+                ast.Apply((ast.Symbol((keywords.BUILTIN_QUOTE_FUNC,)),
                           ast.Symbol(('a',)))),)))
 
     def test_transform_2_non_nested_quote_operators_into_function_calls(self):
@@ -48,11 +48,11 @@ class Parser2TestCase(unittest.TestCase):
         self.assertEqual(
             result,
             ast.RootAbstractSyntaxNode((
-                ast.List((
+                ast.Apply((
                     ast.Symbol((keywords.BUILTIN_QUOTE_FUNC,)),
                     ast.Symbol(('a',)))),
                 ast.Value((types.Int((1,)),)),
-                ast.List((
+                ast.Apply((
                     ast.Symbol((keywords.BUILTIN_QUOTE_FUNC,)),
                     ast.Symbol(('b',)))),
             )))
@@ -66,11 +66,11 @@ class Parser2TestCase(unittest.TestCase):
         self.assertEqual(
             result,
             ast.RootAbstractSyntaxNode((
-                ast.List((
+                ast.Apply((
                     ast.Symbol((keywords.BUILTIN_QUOTE_FUNC,)),
-                    ast.List((
+                    ast.Apply((
                         ast.Symbol((keywords.BUILTIN_QUOTE_FUNC,)),
-                        ast.List((
+                        ast.Apply((
                             ast.Symbol((keywords.BUILTIN_QUOTE_FUNC,)),
                             ast.Symbol(('a',)))),)))),)))
 
@@ -84,7 +84,7 @@ class Parser2TestCase(unittest.TestCase):
         self.assertEqual(
             result,
             ast.RootAbstractSyntaxNode((
-                ast.List((
+                ast.Apply((
                     ast.Value((types.Int((1,)),)),)),)))
 
     def test_all_literal_types_are_created(self):
@@ -114,10 +114,10 @@ class Parser2TestCase(unittest.TestCase):
                         cn((True,)),
                         cn((3.14,)))))),)))
         expected = ast.RootAbstractSyntaxNode((
-            ast.List((
+            ast.Apply((
                 ast.Value((types.String(('x',)),)),
                 ast.Value((types.Int((1,)),)),
-                ast.List((
+                ast.Apply((
                     ast.Value((types.Bool((True,)),)),
                     ast.Value((types.Float((3.14,)),)))))),))
 
@@ -171,7 +171,7 @@ class ParserAssignmentTestCase(unittest.TestCase):
                     cn((1,)))),)))
         expected = ast.RootAbstractSyntaxNode((
             ast.Assign((
-                ast.List((
+                ast.Apply((
                     ast.Symbol(('f',)),)),
                 ast.Value((types.Int((1,)),)))),))
         self.assertEqual(actual, expected)
@@ -200,7 +200,7 @@ class ParserAssignmentTestCase(unittest.TestCase):
                             cn((87,)))))))),)))
         expected = ast.RootAbstractSyntaxNode((
             ast.Assign((
-                ast.List((
+                ast.Apply((
                     ast.Symbol(('f',)),
                     ast.Assign((             # This won't get evaluated
                         ast.Symbol(('y',)),
@@ -208,7 +208,7 @@ class ParserAssignmentTestCase(unittest.TestCase):
                 ast.Assign((
                     ast.Symbol(('z',)),
                     ast.Assign((
-                        ast.List((
+                        ast.Apply((
                             ast.Symbol(('t',)),
                             ast.Symbol(('g',)),
                             ast.Symbol(('v',)))),
@@ -235,13 +235,13 @@ class ConditionTestCase(unittest.TestCase):
                                 cn((2,)))))))))),)))
         expected = ast.RootAbstractSyntaxNode((
             ast.Condition((
-                ast.List((
+                ast.Apply((
                     ast.Value((types.Bool((False,)),)),
                     ast.Value((types.Int((1,)),)))),
-                ast.List((
+                ast.Apply((
                     ast.Value((types.Bool((True,)),)),
                     ast.Condition((
-                        ast.List((
+                        ast.Apply((
                             ast.Value((types.Bool((False,)),)),
                             ast.Value((types.Int((2,)),)))),)))))),))
         self.assertEqual(actual, expected)
@@ -263,3 +263,59 @@ class LambdasTestCase(unittest.TestCase):
                     a_s('x')),
                 a_v(1)))
         self.assertEqual(actual, expected)
+
+class FunctionCreationTestCase(unittest.TestCase):
+    def test_factorial_is_transformed_well_from_cst_to_ast(self):
+        # This is the factorial function, as defined in the interpreter
+        # and lexer tests
+        cstree = c_r(
+            c_n(
+                c_n('def'),
+                c_n(
+                    c_n('fact'),
+                    c_n('n')),
+                c_n(
+                    c_n('cond'),
+                    c_n(
+                        c_n(
+                            c_n('='),
+                            c_n('n'),
+                            c_n(1)),
+                        c_n(1)),
+                    c_n(
+                        c_n(True),
+                        c_n(
+                            c_n('*'),
+                            c_n('n'),
+                            c_n(
+                                c_n('fact'),
+                                c_n(
+                                    c_n('sub'),
+                                    c_n('n'),
+                                    c_n(1))))))))
+        expected_ast = a_r(
+            a_a(
+                a_li(
+                    a_s('fact'),
+                    a_s('n')),
+                a_c(
+                    a_li(
+                        a_li(
+                            a_o('='),
+                            a_s('n'),
+                            a_v(1)),
+                        a_v(1)),
+                    a_li(
+                        a_v(True),
+                        a_li(
+                            a_o('*'),
+                            a_s('n'),
+                            a_li(
+                                a_s('fact'),
+                                a_li(
+                                    a_s('sub'),
+                                    a_s('n'),
+                                    a_v(1))))))))
+
+        actual_ast = parser2.get_ast_from_cst(cstree)
+        self.assertEqual(actual_ast, expected_ast)
