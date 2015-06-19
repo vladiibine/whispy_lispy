@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 import unittest
 
 from whispy_lispy import parser2, cst, ast, keywords, types
-from .constructors import (a_v, a_r, a_li, a_la, a_s)
+from .constructors import *
 
 i = cst.IncrementNesting
 d = cst.DecrementNesting
@@ -263,3 +263,59 @@ class LambdasTestCase(unittest.TestCase):
                     a_s('x')),
                 a_v(1)))
         self.assertEqual(actual, expected)
+
+class FunctionCreationTestCase(unittest.TestCase):
+    def test_factorial_is_transformed_well_from_cst_to_ast(self):
+        # This is the factorial function, as defined in the interpreter
+        # and lexer tests
+        cstree = c_r(
+            c_n(
+                c_n('def'),
+                c_n(
+                    c_n('fact'),
+                    c_n('n')),
+                c_n(
+                    c_n('cond'),
+                    c_n(
+                        c_n(
+                            c_n('='),
+                            c_n('n'),
+                            c_n(1)),
+                        c_n(1)),
+                    c_n(
+                        c_n(True),
+                        c_n(
+                            c_n('*'),
+                            c_n('n'),
+                            c_n(
+                                c_n('fact'),
+                                c_n(
+                                    c_n('sub'),
+                                    c_n('n'),
+                                    c_n(1))))))))
+        expected_ast = a_r(
+            a_a(
+                a_li(
+                    a_s('fact'),
+                    a_s('n')),
+                a_c(
+                    a_li(
+                        a_li(
+                            a_o('='),
+                            a_s('n'),
+                            a_v(1)),
+                        a_v(1)),
+                    a_li(
+                        a_v(True),
+                        a_li(
+                            a_o('*'),
+                            a_s('n'),
+                            a_li(
+                                a_s('fact'),
+                                a_li(
+                                    a_s('sub'),
+                                    a_s('n'),
+                                    a_v(1))))))))
+
+        actual_ast = parser2.get_ast_from_cst(cstree)
+        self.assertEqual(actual_ast, expected_ast)

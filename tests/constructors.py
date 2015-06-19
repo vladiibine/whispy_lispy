@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
 import six
-from whispy_lispy import ast, types
+from whispy_lispy import ast, types, cst
 
 if six.PY2:
     str = unicode
@@ -80,3 +80,13 @@ def t_f(*values):
 
 def t_str(*values):
     return _any_node(values, types.String)
+
+
+def c_n(*values):
+    """Return a Concrete Syntax node"""
+    return _any_node(values, cst.ConcreteSyntaxNode)
+
+
+def c_r(*values):
+    """Return a Root concrete syntax tree"""
+    return _any_node(values, cst.RootConcreteSyntaxnode)
