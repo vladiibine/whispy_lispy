@@ -34,7 +34,7 @@ class InterpreterTestCase(unittest.TestCase):
     def test_sum_internal_function(self):
         # (def x (sum 1 2))
         tree = ast.RootAbstractSyntaxNode((
-            ast.List((
+            ast.Apply((
                 ast.Symbol(('sum',)),
                 ast.Value((types.Int((3,)),)),
                 ast.Value((types.Int((4,)),))
@@ -53,11 +53,11 @@ class InterpreterTestCase(unittest.TestCase):
             )),
             ast.Assign((
                 ast.Symbol(('y',)),
-                ast.List((
+                ast.Apply((
                     ast.Symbol(('sum',)),
                     ast.Symbol(('x',)),
                     ast.Value((types.Int((1,)),)),
-                    ast.List((types.Int((2,)),))))))))
+                    ast.Apply((types.Int((2,)),))))))))
 
         scope = scopes2.Scope()
         interpreter2.interpret_ast(tree, scope)

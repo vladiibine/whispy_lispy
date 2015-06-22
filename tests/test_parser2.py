@@ -23,7 +23,7 @@ class Parser2TestCase(unittest.TestCase):
 
         self.assertEqual(
             result,
-            ast.RootAbstractSyntaxNode((ast.List((ast.Symbol(('a',)),)),)))
+            ast.RootAbstractSyntaxNode((ast.Apply((ast.Symbol(('a',)),)),)))
 
     def test_transform_simple_quote_operator_into_function(self):
         # 'a
@@ -33,7 +33,7 @@ class Parser2TestCase(unittest.TestCase):
         self.assertEqual(
             result,
             ast.RootAbstractSyntaxNode((
-                ast.List((ast.Symbol((keywords.BUILTIN_QUOTE_FUNC,)),
+                ast.Apply((ast.Symbol((keywords.BUILTIN_QUOTE_FUNC,)),
                           ast.Symbol(('a',)))),)))
 
     def test_transform_2_non_nested_quote_operators_into_function_calls(self):
@@ -48,11 +48,11 @@ class Parser2TestCase(unittest.TestCase):
         self.assertEqual(
             result,
             ast.RootAbstractSyntaxNode((
-                ast.List((
+                ast.Apply((
                     ast.Symbol((keywords.BUILTIN_QUOTE_FUNC,)),
                     ast.Symbol(('a',)))),
                 ast.Value((types.Int((1,)),)),
-                ast.List((
+                ast.Apply((
                     ast.Symbol((keywords.BUILTIN_QUOTE_FUNC,)),
                     ast.Symbol(('b',)))),
             )))
@@ -66,11 +66,11 @@ class Parser2TestCase(unittest.TestCase):
         self.assertEqual(
             result,
             ast.RootAbstractSyntaxNode((
-                ast.List((
+                ast.Apply((
                     ast.Symbol((keywords.BUILTIN_QUOTE_FUNC,)),
-                    ast.List((
+                    ast.Apply((
                         ast.Symbol((keywords.BUILTIN_QUOTE_FUNC,)),
-                        ast.List((
+                        ast.Apply((
                             ast.Symbol((keywords.BUILTIN_QUOTE_FUNC,)),
                             ast.Symbol(('a',)))),)))),)))
 
@@ -84,7 +84,7 @@ class Parser2TestCase(unittest.TestCase):
         self.assertEqual(
             result,
             ast.RootAbstractSyntaxNode((
-                ast.List((
+                ast.Apply((
                     ast.Value((types.Int((1,)),)),)),)))
 
     def test_all_literal_types_are_created(self):
@@ -114,10 +114,10 @@ class Parser2TestCase(unittest.TestCase):
                         cn((True,)),
                         cn((3.14,)))))),)))
         expected = ast.RootAbstractSyntaxNode((
-            ast.List((
+            ast.Apply((
                 ast.Value((types.String(('x',)),)),
                 ast.Value((types.Int((1,)),)),
-                ast.List((
+                ast.Apply((
                     ast.Value((types.Bool((True,)),)),
                     ast.Value((types.Float((3.14,)),)))))),))
 
@@ -171,7 +171,7 @@ class ParserAssignmentTestCase(unittest.TestCase):
                     cn((1,)))),)))
         expected = ast.RootAbstractSyntaxNode((
             ast.Assign((
-                ast.List((
+                ast.Apply((
                     ast.Symbol(('f',)),)),
                 ast.Value((types.Int((1,)),)))),))
         self.assertEqual(actual, expected)
@@ -200,7 +200,7 @@ class ParserAssignmentTestCase(unittest.TestCase):
                             cn((87,)))))))),)))
         expected = ast.RootAbstractSyntaxNode((
             ast.Assign((
-                ast.List((
+                ast.Apply((
                     ast.Symbol(('f',)),
                     ast.Assign((             # This won't get evaluated
                         ast.Symbol(('y',)),
@@ -208,7 +208,7 @@ class ParserAssignmentTestCase(unittest.TestCase):
                 ast.Assign((
                     ast.Symbol(('z',)),
                     ast.Assign((
-                        ast.List((
+                        ast.Apply((
                             ast.Symbol(('t',)),
                             ast.Symbol(('g',)),
                             ast.Symbol(('v',)))),
@@ -235,13 +235,13 @@ class ConditionTestCase(unittest.TestCase):
                                 cn((2,)))))))))),)))
         expected = ast.RootAbstractSyntaxNode((
             ast.Condition((
-                ast.List((
+                ast.Apply((
                     ast.Value((types.Bool((False,)),)),
                     ast.Value((types.Int((1,)),)))),
-                ast.List((
+                ast.Apply((
                     ast.Value((types.Bool((True,)),)),
                     ast.Condition((
-                        ast.List((
+                        ast.Apply((
                             ast.Value((types.Bool((False,)),)),
                             ast.Value((types.Int((2,)),)))),)))))),))
         self.assertEqual(actual, expected)

@@ -10,7 +10,7 @@ class ConditionEvaluationTestCase(unittest.TestCase):
         # (cond (#t "yes"))
         tree = ast.RootAbstractSyntaxNode((
             ast.Condition((
-                ast.List((
+                ast.Apply((
                     ast.Value((types.Bool((True,)),)),
                     ast.Value((types.String(("yes",)),)))),)),))
         result = interpreter2.interpret_ast(tree)
@@ -20,10 +20,10 @@ class ConditionEvaluationTestCase(unittest.TestCase):
         # (cond (#f 1)(#t 3.1))
         tree = ast.RootAbstractSyntaxNode((
             ast.Condition((
-                ast.List((
+                ast.Apply((
                     ast.Value((types.Bool((False,)),)),
                     ast.Value((types.Int((1,)),)),)),
-                ast.List((
+                ast.Apply((
                     ast.Value((types.Bool((True,)),)),
                     ast.Value((types.Float((3.1,)),)))))),))
         result = interpreter2.interpret_ast(tree)
@@ -77,12 +77,12 @@ class ConditionEvaluationTestCase(unittest.TestCase):
         # (cond ((f) #f))
         tree = ast.RootAbstractSyntaxNode((
             ast.Assign((
-                ast.List((
+                ast.Apply((
                     ast.Symbol(('f',)),)),
                 ast.Value((types.Bool((True,)),)))),
             ast.Condition((
-                ast.List((
-                    ast.List((
+                ast.Apply((
+                    ast.Apply((
                         ast.Symbol(('f',)),)),
                     ast.Value((types.Bool((False,)),)))),))))
         result = interpreter2.interpret_ast(tree)

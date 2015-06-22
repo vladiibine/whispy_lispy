@@ -24,7 +24,7 @@ def interpret_ast(astree, scope=None):
     if astree.is_leaf() and not astree.is_root():
         return interpret_leaf(astree, scope)
 
-    if isinstance(astree, ast.List):
+    if isinstance(astree, ast.Apply):
         return interpret_list(astree, scope)
 
     if isinstance(astree, ast.Assign):
@@ -63,7 +63,7 @@ def interpret_assign(astree, scope):
         scope[types.Symbol(astree[0].values)] = interpret_ast(astree[1], scope)
 
     # Function assignment
-    elif isinstance(astree[0], ast.List):
+    elif isinstance(astree[0], ast.Apply):
         # first: assume it contains a single value - means no formal parameters
         scope_key = types.Symbol(astree[0].values[0].values)
         new_function = create_function(astree, scope)
