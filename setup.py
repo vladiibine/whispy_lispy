@@ -24,7 +24,7 @@ def read(*names, **kwargs):
 
 setup(
     name='whispy_lispy',
-    version='0.2.0',
+    version='0.3.0',
     license='BSD',
     description='Toy LISP implementation - because everyone does it!',
     long_description='%s\n%s' % (read('README.rst'), re.sub(':[a-z]+:`~?(.*?)`', r'``\1``', read('CHANGELOG.rst'))),
