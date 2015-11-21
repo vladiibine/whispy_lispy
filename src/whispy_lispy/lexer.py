@@ -48,7 +48,7 @@ SOURCE_PATTERNS = (
     (make_token(lambda x: None, cst.IncrementNesting), re.compile('\(')),
     (make_token(lambda x: None, cst.DecrementNesting), re.compile('\)')),
     # The operators
-    (make_token(str, cst.Operator), re.compile(
+    (make_token(str), re.compile(
         r'[\+\-\|&^~%]|[\*\\/=]{1,2}|[<>]=?|<<|>>|!='))
 )
 
@@ -121,8 +121,7 @@ def get_concrete_syntax_tree(token_list):
                     source=token.source, index=token.index,
                     extra_info='Too many closing parentheses')
             continue
-        q[-1].append(cst.ConcreteSyntaxNode(
-            (token.value,), isinstance(token, cst.Operator)))
+        q[-1].append(cst.ConcreteSyntaxNode((token.value,)))
 
     if len(q) > 1:
         raise WhispyLispySyntaxError(

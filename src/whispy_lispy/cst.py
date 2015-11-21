@@ -8,6 +8,9 @@ from __future__ import unicode_literals
 import six
 
 
+from whispy_lispy import keywords
+
+
 class CSTError(Exception):
     pass
 
@@ -41,23 +44,14 @@ class Token(object):
         return self.value == other.value
 
 
-class Operator(Token):
-    """Lexer knows already that a pattern is an operator"""
-    def __init__(self, *args, **kwargs):
-        super(Operator, self).__init__(*args, **kwargs)
-
-    def __repr__(self):
-        return '<Op {}>'.format(self.value)
-
-
 class ConcreteSyntaxNode(object):
     """A node in the concrete syntax tree.
 
     The state of this node is kept as a tuple
     """
-    __slots__ = ['values', '_operator']
+    __slots__ = ['values']
 
-    def __init__(self, values, is_operator=False):
+    def __init__(self, values):
         """
         The tuple either contains other nodes, or values. Not both!
         :type values: tuple
@@ -70,7 +64,6 @@ class ConcreteSyntaxNode(object):
                 .format(len(types), values)
             )
         self.values = values
-        self._operator = is_operator
 
     def __eq__(self, other):
         if other is None:
@@ -83,7 +76,10 @@ class ConcreteSyntaxNode(object):
         return '<cN {}>'.format(self.values)
 
     def is_operator(self):
-        return self._operator
+        return (
+            len(self.values) == 1 and
+            self.values[0] in keywords.OPERATORS
+        )
 
     def is_root(self):
         return isinstance(self, RootConcreteSyntaxnode)
