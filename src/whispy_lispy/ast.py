@@ -2,6 +2,7 @@
 """Abstract syntax tree stuff
 """
 from __future__ import unicode_literals
+from whispy_lispy import types
 
 
 class AbstractSyntaxNode(object):
@@ -81,11 +82,19 @@ class Int(Value):
     def __repr__(self):
         return '<{}>'.format(self.values[0])
 
+    @classmethod
+    def from_parsed_result(cls, *args, **kwargs):
+        return types.Int((int(args[2][0]),))
+
 
 class Float(Value):
     """Represents a floating point value"""
     def __repr__(self):
         return '<{}>'.format(self.values[0])
+
+    @classmethod
+    def from_parsed_result(cls, *args, **kwargs):
+        return types.Float((float(''.join(args[2])),))
 
 
 class Bool(Value):
@@ -93,11 +102,20 @@ class Bool(Value):
     def __repr__(self):
         return '<{}>'.format(self.values[0])
 
+    @classmethod
+    def from_parsed_result(cls, *args, **kwargs):
+        return types.Bool((True if args[2][0] == '#t' else False,))
+
 
 class String(Value):
     """Represents a character string"""
     def __repr__(self):
         return '<{}>'.format(self.values[0])
+
+    @classmethod
+    def from_parse_result(cls, *args, **kwargs):
+        quoted_string = args[2][0]
+        return types.String((quoted_string[1:-1],))
 
 
 class Assign(Container):
