@@ -101,3 +101,9 @@ Development
 To run the all tests run::
 
     tox
+    
+Future reading
+==============
+
+Lisp interpreter (diddn't read it, but heard it's cool)
+http://norvig.com/lispy.html
